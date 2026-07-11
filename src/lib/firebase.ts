@@ -100,6 +100,7 @@ export const subscribeToReports = (
         const data = doc.data();
         reports.push({
           id: doc.id,
+          numeroRelatorio: data.numeroRelatorio,
           evento: data.evento,
           data: data.data,
           hora: data.hora,
