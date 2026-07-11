@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
-  HelpCircle, 
   FileText, 
   CheckCircle, 
   AlertCircle, 
@@ -384,19 +383,6 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* Informative Instructions Bar for Quick Use */}
-            <div className="col-span-12 bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <HelpCircle className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Como usar o gerenciador:</p>
-                  <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
-                    Cadastre um evento à esquerda e clique em <strong>Salvar</strong>. Use a lista para <strong>Buscar</strong> por palavra-chave, <strong>Visualizar</strong> em tela cheia com duplo clique, <strong>Editar</strong> ou exportar em <strong>PDF individual</strong> ou <strong>PDF Consolidado</strong>.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Left Side: Form Panel */}
             <section className="col-span-12 md:col-span-5 h-[calc(100vh-190px)] min-h-[500px] md:h-[calc(100vh-190px)]">
               <ReportForm
