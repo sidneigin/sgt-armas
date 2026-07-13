@@ -17,7 +17,8 @@ service cloud.firestore {
     function isValidReport(data) {
       return data.numeroRelatorio is string && data.numeroRelatorio.size() > 0 && data.numeroRelatorio.size() <= 50
         && data.evento is string && data.evento.size() > 0 && data.evento.size() <= 300
-        && data.local is string && data.local.size() > 0 && data.local.size() <= 300
+        && data.regional is string && data.regional.size() > 0 && data.regional.size() <= 300
+        && data.comando is string && data.comando.size() > 0 && data.comando.size() <= 300
         && data.responsavel is string && data.responsavel.size() > 0 && data.responsavel.size() <= 200
         && data.conferidoPor is string && data.conferidoPor.size() > 0 && data.conferidoPor.size() <= 200
         && data.descricao is string && data.descricao.size() > 0 && data.descricao.size() <= 10000

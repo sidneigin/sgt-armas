@@ -44,8 +44,12 @@ export function validateEventReport(report: Partial<EventReport>): ValidationRes
     errors.push('O horário está em um formato inválido (esperado HH:MM).');
   }
 
-  if (!report.local || !report.local.trim()) {
-    errors.push('O local é obrigatório.');
+  if (!report.regional || !report.regional.trim()) {
+    errors.push('A regional é obrigatória.');
+  }
+
+  if (!report.comando || !report.comando.trim()) {
+    errors.push('O comando é obrigatório.');
   }
 
   if (!report.descricao || !report.descricao.trim()) {

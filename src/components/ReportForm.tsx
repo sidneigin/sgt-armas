@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Clock, MapPin, User, Users, FileText, CheckCircle, RotateCcw, AlertCircle, Sparkles, Camera, X, Loader2, Hash } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Users, FileText, CheckCircle, RotateCcw, AlertCircle, Sparkles, Camera, X, Loader2, Hash, Shield } from 'lucide-react';
 import { EventReport, PhotoChange } from '../types';
 import { compressImageFile } from '../utils/imageCompress';
 import logoImg from '../assets/images/sgt_armas_logo_ui.jpg';
@@ -15,7 +15,8 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
   const [evento, setEvento] = useState('');
   const [data, setData] = useState('');
   const [hora, setHora] = useState('');
-  const [local, setLocal] = useState('');
+  const [regional, setRegional] = useState('');
+  const [comando, setComando] = useState('');
   const [participantes, setParticipantes] = useState('');
   const [descricao, setDescricao] = useState('');
   const [responsavel, setResponsavel] = useState('');
@@ -47,7 +48,8 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
       setEvento(editingReport.evento);
       setData(editingReport.data);
       setHora(editingReport.hora);
-      setLocal(editingReport.local);
+      setRegional(editingReport.regional);
+      setComando(editingReport.comando || '');
       setParticipantes(editingReport.participantes);
       setDescricao(editingReport.descricao);
       setResponsavel(editingReport.responsavel);
@@ -67,7 +69,8 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
     setEvento('');
     setData('');
     setHora('');
-    setLocal('');
+    setRegional('');
+    setComando('');
     setParticipantes('');
     setDescricao('');
     setResponsavel('');
@@ -122,7 +125,8 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
       if (!isRealDate) newErrors.data = 'A data informada não é válida.';
     }
     if (!hora) newErrors.hora = 'O horário é obrigatório.';
-    if (!local.trim()) newErrors.local = 'O local é obrigatório.';
+    if (!regional.trim()) newErrors.regional = 'A regional é obrigatória.';
+    if (!comando.trim()) newErrors.comando = 'O comando é obrigatório.';
     if (!descricao.trim()) {
       newErrors.descricao = 'A descrição detalhada é obrigatória.';
     } else if (descricao.length > 10000) {
@@ -156,7 +160,8 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
       evento: evento.trim(),
       data,
       hora,
-      local: local.trim(),
+      regional: regional.trim(),
+      comando: comando.trim(),
       participantes: participantes.trim(),
       descricao: descricao.trim(),
       responsavel: responsavel.trim(),
@@ -298,27 +303,53 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
           </div>
         </div>
 
-        {/* Local */}
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-slate-500 block">Local *</label>
-          <div className="relative">
-            <input
-              type="text"
-              id="input-local"
-              value={local}
-              onChange={(e) => setLocal(e.target.value)}
-              placeholder="Ex: Sala de Reuniões A ou Auditório Principal"
-              className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border ${
-                errors.local ? 'border-rose-400 bg-rose-50/10 focus:ring-rose-200' : 'border-slate-200 focus:border-indigo-400 focus:ring-indigo-100'
-              } outline-none focus:ring-3 transition-all`}
-            />
-            <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+        {/* Grid para Regional e Comando */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Regional */}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-500 block">Regional *</label>
+            <div className="relative">
+              <input
+                type="text"
+                id="input-regional"
+                value={regional}
+                onChange={(e) => setRegional(e.target.value)}
+                placeholder="Ex: 1ª Regional"
+                className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border ${
+                  errors.regional ? 'border-rose-400 bg-rose-50/10 focus:ring-rose-200' : 'border-slate-200 focus:border-indigo-400 focus:ring-indigo-100'
+                } outline-none focus:ring-3 transition-all`}
+              />
+              <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            </div>
+            {errors.regional && (
+              <p className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> {errors.regional}
+              </p>
+            )}
           </div>
-          {errors.local && (
-            <p className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" /> {errors.local}
-            </p>
-          )}
+
+          {/* Comando */}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-500 block">Comando *</label>
+            <div className="relative">
+              <input
+                type="text"
+                id="input-comando"
+                value={comando}
+                onChange={(e) => setComando(e.target.value)}
+                placeholder="Ex: CMD XXIX"
+                className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border ${
+                  errors.comando ? 'border-rose-400 bg-rose-50/10 focus:ring-rose-200' : 'border-slate-200 focus:border-indigo-400 focus:ring-indigo-100'
+                } outline-none focus:ring-3 transition-all`}
+              />
+              <Shield className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            </div>
+            {errors.comando && (
+              <p className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> {errors.comando}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Foto do Evento */}

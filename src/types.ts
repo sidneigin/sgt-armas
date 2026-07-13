@@ -4,7 +4,8 @@ export interface EventReport {
   evento: string;
   data: string; // YYYY-MM-DD
   hora: string; // HH:MM
-  local: string;
+  regional: string;
+  comando: string;
   participantes: string;
   descricao: string; // Descrição detalhada
   responsavel: string; // Quem fez o relatório

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   FileText, 
+  ClipboardList,
   CheckCircle, 
   AlertCircle, 
   LogIn, 
@@ -33,6 +34,7 @@ export default function App() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeViewReport, setActiveViewReport] = useState<EventReport | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [activeTab, setActiveTab] = useState<'form' | 'reports'>('form');
 
   // Firebase Auth & Sync States
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -244,6 +246,7 @@ export default function App() {
 
   const handleLoadEditReport = (report: EventReport) => {
     setEditingReport(report);
+    setActiveTab('form');
     // Scroll to form on mobile devices
     const formElement = document.getElementById('input-evento');
     if (formElement) {
@@ -336,7 +339,7 @@ export default function App() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:grid md:grid-cols-12 gap-6 min-h-0">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6 min-h-0">
         
         {/* Floating Global Notification Alert */}
         {alertInfo && (
@@ -356,13 +359,13 @@ export default function App() {
 
         {!authChecked ? (
           // Ainda confirmando se há sessão salva
-          <div className="col-span-12 flex flex-col items-center justify-center gap-3 py-24 text-slate-400">
+          <div className="w-full flex flex-col items-center justify-center gap-3 py-24 text-slate-400">
             <RefreshCw className="w-7 h-7 animate-spin" />
             <p className="text-sm">Verificando sessão...</p>
           </div>
         ) : !user ? (
           // Acesso restrito: só mostra conteúdo depois de logar
-          <div className="col-span-12 flex flex-col items-center justify-center gap-4 py-24 text-center">
+          <div className="w-full flex flex-col items-center justify-center gap-4 py-24 text-center">
             <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
               <img src={logoImg} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
@@ -383,28 +386,62 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* Left Side: Form Panel */}
-            <section className="col-span-12 md:col-span-5 h-[calc(100vh-190px)] min-h-[500px] md:h-[calc(100vh-190px)]">
-              <ReportForm
-                editingReport={editingReport}
-                onSave={handleSaveReport}
-                onCancelEdit={handleCancelEdit}
-              />
-            </section>
+            {/* Left Sidebar: Dashboard Navigation */}
+            <aside className="shrink-0 md:w-56">
+              <nav className="flex md:flex-col gap-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 md:p-3 md:sticky md:top-24">
+                <button
+                  onClick={() => setActiveTab('form')}
+                  className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                    activeTab === 'form'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 shrink-0" />
+                  <span>{editingReport ? 'Editando relatório' : 'Formulário'}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                    activeTab === 'reports'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                  }`}
+                >
+                  <ClipboardList className="w-4 h-4 shrink-0" />
+                  <span>Relatórios</span>
+                  <span
+                    className={`hidden md:inline-flex ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 ${
+                      activeTab === 'reports' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {reports.length}
+                  </span>
+                </button>
+              </nav>
+            </aside>
 
-            {/* Right Side: List and Search Panel */}
-            <section className="col-span-12 md:col-span-7 h-[calc(100vh-190px)] min-h-[500px] md:h-[calc(100vh-190px)]">
-              <ReportList
-                reports={reports}
-                selectedReportId={selectedReportId}
-                onSelectReport={handleSelectReport}
-                onDoubleSelectReport={handleDoubleSelectReport}
-                onViewReport={handleViewReport}
-                onLoadEditReport={handleLoadEditReport}
-                onDeleteReport={handleDeleteReport}
-                onGenerateSinglePDF={(report) => import('./utils/pdfGenerator').then(({ generateSingleReportPDF }) => generateSingleReportPDF(report))}
-                onGenerateConsolidatedPDF={(filteredReports) => import('./utils/pdfGenerator').then(({ generateConsolidatedReportsPDF }) => generateConsolidatedReportsPDF(filteredReports))}
-              />
+            {/* Content Panel: Form or Reports, one at a time */}
+            <section className="flex-1 min-w-0 h-[calc(100vh-190px)] min-h-[500px]">
+              {activeTab === 'form' ? (
+                <ReportForm
+                  editingReport={editingReport}
+                  onSave={handleSaveReport}
+                  onCancelEdit={handleCancelEdit}
+                />
+              ) : (
+                <ReportList
+                  reports={reports}
+                  selectedReportId={selectedReportId}
+                  onSelectReport={handleSelectReport}
+                  onDoubleSelectReport={handleDoubleSelectReport}
+                  onViewReport={handleViewReport}
+                  onLoadEditReport={handleLoadEditReport}
+                  onDeleteReport={handleDeleteReport}
+                  onGenerateSinglePDF={(report) => import('./utils/pdfGenerator').then(({ generateSingleReportPDF }) => generateSingleReportPDF(report))}
+                  onGenerateConsolidatedPDF={(filteredReports) => import('./utils/pdfGenerator').then(({ generateConsolidatedReportsPDF }) => generateConsolidatedReportsPDF(filteredReports))}
+                />
+              )}
             </section>
           </>
         )}

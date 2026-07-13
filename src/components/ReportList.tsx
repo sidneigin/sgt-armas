@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Eye, Edit3, Trash2, FileDown, Layers, Calendar, MapPin, User, AlertTriangle } from 'lucide-react';
+import { Search, Eye, Edit3, Trash2, FileDown, Layers, Calendar, MapPin, User, AlertTriangle, Shield } from 'lucide-react';
 import { EventReport } from '../types';
 import { formatDate } from '../utils/formatDate';
 import { applyDateFilter, defaultDateFilter, DateFilterState } from '../utils/dateFilters';
@@ -57,7 +57,8 @@ export default function ReportList({
     return (
       (report.numeroRelatorio && report.numeroRelatorio.toLowerCase().includes(term)) ||
       report.evento.toLowerCase().includes(term) ||
-      report.local.toLowerCase().includes(term) ||
+      report.regional.toLowerCase().includes(term) ||
+      report.comando.toLowerCase().includes(term) ||
       report.responsavel.toLowerCase().includes(term) ||
       (report.conferidoPor && report.conferidoPor.toLowerCase().includes(term))
     );
@@ -117,7 +118,7 @@ export default function ReportList({
               id="search-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por número, evento, local ou responsável..."
+              placeholder="Buscar por número, evento, regional, comando ou responsável..."
               className="w-full pl-9 pr-8 py-2 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -164,11 +165,12 @@ export default function ReportList({
                 <tr>
                   <th scope="col" className="w-12 px-2 py-3"></th>
                   <th scope="col" className="w-20 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nº</th>
-                  <th scope="col" className="w-1/3 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Evento</th>
+                  <th scope="col" className="w-1/4 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Evento</th>
                   <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Data</th>
-                  <th scope="col" className="w-1/5 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Local</th>
+                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Regional</th>
+                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Comando</th>
                   <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Responsável</th>
-                  <th scope="col" className="w-1/8 px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Ações</th>
+                  <th scope="col" className="w-1/12 px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
@@ -206,11 +208,18 @@ export default function ReportList({
                           {formatDate(report.data)}
                         </span>
                       </td>
-                      {/* Local */}
+                      {/* Regional */}
                       <td className="px-4 py-3 text-sm truncate">
                         <span className="flex items-center gap-1.5 text-slate-500 group-hover:text-slate-700 truncate">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{report.local}</span>
+                          <span className="truncate">{report.regional}</span>
+                        </span>
+                      </td>
+                      {/* Comando */}
+                      <td className="px-4 py-3 text-sm truncate">
+                        <span className="flex items-center gap-1.5 text-slate-500 group-hover:text-slate-700 truncate">
+                          <Shield className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span className="truncate">{report.comando}</span>
                         </span>
                       </td>
                       {/* Responsavel */}

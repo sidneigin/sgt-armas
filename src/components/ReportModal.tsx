@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Clock, MapPin, User, Users, FileText, X, FileDown, ShieldCheck, Hash } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Users, FileText, X, FileDown, ShieldCheck, Hash, Shield } from 'lucide-react';
 import { EventReport } from '../types';
 import { formatDate } from '../utils/formatDate';
 import logoImg from '../assets/images/sgt_armas_logo_ui.jpg';
@@ -119,8 +119,18 @@ export default function ReportModal({
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Local</p>
-                    <p className="text-sm font-medium">{report.local}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Regional</p>
+                    <p className="text-sm font-medium">{report.regional}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-slate-700">
+                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Comando</p>
+                    <p className="text-sm font-medium">{report.comando}</p>
                   </div>
                 </div>
 
