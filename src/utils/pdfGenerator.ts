@@ -376,15 +376,9 @@ export async function buildConsolidatedReportsPDF(reports: EventReport[]) {
   doc.text(`Total de relatórios listados: ${reports.length}   |   Data de Emissão: ${genDateStr}`, margin, 26);
 
   // 2. Prepare Data Table
-  const tableHeaders = [['Nº', 'Evento', 'Data / Hora', 'Regional', 'Comando', 'Responsável', 'Conferido por', 'Resumo da Descrição']];
+  const tableHeaders = [['Nº', 'Evento', 'Data / Hora', 'Regional', 'Comando', 'Responsável', 'Conferido por']];
   
   const tableBody = reports.map(report => {
-    // Truncate description for the table
-    let descSummary = report.descricao || '';
-    if (descSummary.length > 100) {
-      descSummary = descSummary.substring(0, 97) + '...';
-    }
-    
     return [
       report.numeroRelatorio || '—',
       report.evento,
@@ -392,8 +386,7 @@ export async function buildConsolidatedReportsPDF(reports: EventReport[]) {
       report.regional,
       report.comando,
       report.responsavel,
-      report.conferidoPor || 'Não informado',
-      descSummary
+      report.conferidoPor || 'Não informado'
     ];
   });
 
@@ -414,14 +407,13 @@ export async function buildConsolidatedReportsPDF(reports: EventReport[]) {
       fontStyle: 'bold',
     },
     columnStyles: {
-      0: { cellWidth: 15, fontStyle: 'bold' },
-      1: { cellWidth: 32, fontStyle: 'bold' },
-      2: { cellWidth: 26 },
-      3: { cellWidth: 24 },
-      4: { cellWidth: 24 },
-      5: { cellWidth: 24 },
-      6: { cellWidth: 24 },
-      7: { cellWidth: 55 }
+      0: { cellWidth: 18, fontStyle: 'bold' },
+      1: { cellWidth: 55, fontStyle: 'bold' },
+      2: { cellWidth: 38 },
+      3: { cellWidth: 38 },
+      4: { cellWidth: 38 },
+      5: { cellWidth: 40 },
+      6: { cellWidth: 40 }
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252] // Slate 50
