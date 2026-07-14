@@ -26,3 +26,17 @@ export type PhotoChange =
   | { type: 'removed' }
   | { type: 'new'; blob: Blob; previewDataUrl: string };
 
+// Perfil de acesso do usuário: controla quem pode usar o sistema.
+// Administradores aprovam ou recusam o acesso de novos usuários.
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  role: 'admin' | 'user';
+  createdAt: string; // ISO date
+  approvedAt?: string; // ISO date
+  approvedBy?: string; // e-mail do admin que aprovou/recusou
+}
+

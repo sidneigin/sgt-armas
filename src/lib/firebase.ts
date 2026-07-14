@@ -15,9 +15,14 @@ import {
   deleteDoc, 
   query, 
   onSnapshot,
-  deleteField
+  deleteField,
+  getDoc,
+  getDocs,
+  where,
+  limit,
+  updateDoc
 } from 'firebase/firestore';
-import { EventReport } from '../types';
+import { EventReport, UserProfile } from '../types';
 import firebaseConfig from '../../firebase-config.json';
 
 // Use environment variables if set (e.g. on Vercel), fallback to local firebase-config.json
@@ -171,4 +176,114 @@ export const syncLocalReportsToFirestore = async (
   });
 
   return { succeeded, failed };
+};
+
+/**
+ * Gestão de acesso de usuários (aprovação de login)
+ *
+ * Qualquer pessoa pode fazer login com Google, mas só consegue USAR o sistema
+ * (ver/criar relatórios) depois de ser aprovada por um administrador.
+ * Administradores são identificados pelo e-mail, veja ADMIN_EMAILS abaixo.
+ */
+
+export const ADMIN_EMAILS = [
+  'sidneibogas@gmail.com',
+  'claudiosantinao078@gmail.com',
+  'imc.sidnei@gmail.com',
+];
+
+export const isAdminEmail = (email?: string | null): boolean =>
+  !!email && ADMIN_EMAILS.includes(email.toLowerCase());
+
+// Garante que existe um documento de perfil para o usuário logado.
+// - Se o e-mail é de administrador: cria/mantém como admin já aprovado.
+// - Se já existe um perfil: não mexe (preserva o status definido por um admin).
+// - Se é a primeira vez desse usuário E ele já tem relatórios salvos com o
+//   próprio uid (ou seja, já usava o sistema antes desse recurso existir):
+//   aprova automaticamente, sem precisar pedir aprovação de novo.
+// - Caso contrário (usuário realmente novo): cria como "pending".
+export const ensureUserProfile = async (user: User): Promise<UserProfile> => {
+  const email = user.email || '';
+  const profileRef = doc(db, 'users', user.uid);
+  const existingSnap = await getDoc(profileRef);
+
+  if (existingSnap.exists()) {
+    return existingSnap.data() as UserProfile;
+  }
+
+  const nowIso = new Date().toISOString();
+  const admin = isAdminEmail(email);
+
+  let status: UserProfile['status'] = 'pending';
+  if (admin) {
+    status = 'approved';
+  } else {
+    // Usuário já tinha relatórios salvos com esse uid antes de existir aprovação?
+    const priorReports = await getDocs(
+      query(collection(db, 'reports'), where('userId', '==', user.uid), limit(1))
+    );
+    if (!priorReports.empty) {
+      status = 'approved';
+    }
+  }
+
+  const profile: UserProfile = {
+    uid: user.uid,
+    email,
+    displayName: user.displayName || 'Usuário',
+    photoURL: user.photoURL || null,
+    status,
+    role: admin ? 'admin' : 'user',
+    createdAt: nowIso,
+    ...(status === 'approved' ? { approvedAt: nowIso, approvedBy: admin ? email : 'sistema (acesso anterior)' } : {}),
+  };
+
+  await setDoc(profileRef, profile);
+  return profile;
+};
+
+// Observa em tempo real o status de aprovação do usuário logado
+export const subscribeToUserProfile = (
+  uid: string,
+  onUpdate: (profile: UserProfile | null) => void
+) => {
+  const profileRef = doc(db, 'users', uid);
+  return onSnapshot(profileRef, (snap) => {
+    onUpdate(snap.exists() ? (snap.data() as UserProfile) : null);
+  });
+};
+
+// Observa em tempo real TODOS os perfis de usuário (só chamado por admins na tela de gestão)
+export const subscribeToAllUserProfiles = (
+  onUpdate: (profiles: UserProfile[]) => void,
+  onError?: (error: any) => void
+) => {
+  const q = query(collection(db, 'users'));
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const profiles: UserProfile[] = [];
+      snapshot.forEach((docSnap) => profiles.push(docSnap.data() as UserProfile));
+      profiles.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+      onUpdate(profiles);
+    },
+    (error) => {
+      console.error('Erro ao carregar usuários:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+// Aprova, recusa ou revoga o acesso de um usuário (ação restrita a admins pelas regras do Firestore)
+export const setUserApprovalStatus = async (
+  uid: string,
+  status: UserProfile['status'],
+  approvedByEmail: string
+) => {
+  const profileRef = doc(db, 'users', uid);
+  await updateDoc(profileRef, {
+    status,
+    approvedAt: new Date().toISOString(),
+    approvedBy: approvedByEmail,
+  });
 };

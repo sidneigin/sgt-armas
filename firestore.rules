@@ -13,6 +13,44 @@ service cloud.firestore {
         && isValidReport(request.resource.data);
     }
 
+    match /users/{uid} {
+      // Qualquer usuário logado pode ler a lista (necessário para a tela de
+      // gestão de usuários dos admins, e para o próprio usuário ver seu status).
+      allow read: if request.auth != null;
+
+      // Um usuário só pode criar o PRÓPRIO perfil, e só pode se dar como
+      // "pending" (nunca se auto-aprovar ou virar admin nessa criação).
+      // Administradores (por e-mail) podem criar já como admin aprovado.
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && (
+             (isAdminEmail(request.auth.token.email)
+                && request.resource.data.role == 'admin'
+                && request.resource.data.status == 'approved')
+             || (!isAdminEmail(request.auth.token.email)
+                && request.resource.data.role == 'user')
+           );
+
+      // Só administradores podem alterar status/role (aprovar, recusar, revogar).
+      // O próprio usuário pode atualizar dados de exibição (nome/foto), mas
+      // nunca o próprio status ou role.
+      allow update: if request.auth != null
+        && (
+             isAdminEmail(request.auth.token.email)
+             || (request.auth.uid == uid
+                  && request.resource.data.status == resource.data.status
+                  && request.resource.data.role == resource.data.role)
+           );
+
+      allow delete: if request.auth != null && isAdminEmail(request.auth.token.email);
+    }
+
+    function isAdminEmail(email) {
+      return email in ['sidneibogas@gmail.com', 'claudiosantinao078@gmail.com', 'imc.sidnei@gmail.com'];
+    }
+
     // Validações de schema compartilhadas entre create e update
     function isValidReport(data) {
       return data.numeroRelatorio is string && data.numeroRelatorio.size() > 0 && data.numeroRelatorio.size() <= 50

@@ -3,18 +3,22 @@ import {
   ShieldCheck, 
   FileText, 
   ClipboardList,
+  Users,
+  Clock,
+  ShieldAlert,
   CheckCircle, 
   AlertCircle, 
   LogIn, 
   LogOut, 
   RefreshCw
 } from 'lucide-react';
-import type { EventReport, PhotoChange } from './types';
+import type { EventReport, PhotoChange, UserProfile } from './types';
 import { validateEventReport } from './utils/validateReport';
 import { translateFirebaseError } from './utils/firebaseErrors';
 import ReportForm from './components/ReportForm';
 import ReportList from './components/ReportList';
 import ReportModal from './components/ReportModal';
+import UserManagementPanel from './components/UserManagementPanel';
 import { 
   initAuth, 
   googleSignIn, 
@@ -22,7 +26,12 @@ import {
   subscribeToReports, 
   saveReportToFirestore, 
   deleteReportFromFirestore, 
-  syncLocalReportsToFirestore
+  syncLocalReportsToFirestore,
+  ensureUserProfile,
+  subscribeToUserProfile,
+  subscribeToAllUserProfiles,
+  setUserApprovalStatus,
+  isAdminEmail
 } from './lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
 import logoImg from './assets/images/sgt_armas_logo_ui.jpg';
@@ -34,12 +43,19 @@ export default function App() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeViewReport, setActiveViewReport] = useState<EventReport | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [activeTab, setActiveTab] = useState<'form' | 'reports'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'reports' | 'users'>('form');
 
   // Firebase Auth & Sync States
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Perfil de aprovação de acesso do usuário logado
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  // Lista de todos os perfis (só carregada para administradores, na tela de Gestão de Usuários)
+  const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
+  const isAdmin = isAdminEmail(user?.email);
 
   // Load auth state on mount
   useEffect(() => {
@@ -52,6 +68,50 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Garante/observa o perfil de aprovação do usuário logado (controla se ele
+  // pode efetivamente usar o sistema, ou se está aguardando aprovação de um admin).
+  useEffect(() => {
+    if (!user) {
+      setUserProfile(null);
+      return;
+    }
+
+    let unsubscribeProfile: (() => void) | undefined;
+    setProfileLoading(true);
+
+    ensureUserProfile(user)
+      .then(() => {
+        unsubscribeProfile = subscribeToUserProfile(user.uid, (profile) => {
+          setUserProfile(profile);
+          setProfileLoading(false);
+        });
+      })
+      .catch((error) => {
+        console.error('Erro ao verificar perfil de acesso:', error);
+        setProfileLoading(false);
+      });
+
+    return () => {
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
+  }, [user]);
+
+  // Administradores observam todos os perfis, para a tela de Gestão de Usuários
+  useEffect(() => {
+    if (!user || !isAdmin) {
+      setAllProfiles([]);
+      return;
+    }
+    const unsubscribe = subscribeToAllUserProfiles(
+      (profiles) => setAllProfiles(profiles),
+      (error) => {
+        console.error('Erro ao carregar usuários:', error);
+        triggerAlert('Erro ao carregar a lista de usuários.', 'error');
+      }
+    );
+    return () => unsubscribe();
+  }, [user, isAdmin]);
 
   // Load reports from Firestore once logado. O app é 100% na nuvem — sem login,
   // nenhum conteúdo é exibido (ver tela de acesso restrito no return abaixo).
@@ -258,6 +318,42 @@ export default function App() {
     setEditingReport(null);
   };
 
+  // Gestão de Usuários (ações restritas a admins pelas regras do Firestore)
+  const pendingUsersCount = allProfiles.filter((p) => p.status === 'pending').length;
+
+  const handleApproveUser = async (uid: string) => {
+    if (!user?.email) return;
+    try {
+      await setUserApprovalStatus(uid, 'approved', user.email);
+      triggerAlert('Acesso aprovado com sucesso!');
+    } catch (error) {
+      console.error(error);
+      triggerAlert('Erro ao aprovar usuário.', 'error');
+    }
+  };
+
+  const handleRejectUser = async (uid: string) => {
+    if (!user?.email) return;
+    try {
+      await setUserApprovalStatus(uid, 'rejected', user.email);
+      triggerAlert('Acesso recusado.');
+    } catch (error) {
+      console.error(error);
+      triggerAlert('Erro ao recusar usuário.', 'error');
+    }
+  };
+
+  const handleRevokeUser = async (uid: string) => {
+    if (!user?.email) return;
+    try {
+      await setUserApprovalStatus(uid, 'rejected', user.email);
+      triggerAlert('Acesso revogado.');
+    } catch (error) {
+      console.error(error);
+      triggerAlert('Erro ao revogar acesso do usuário.', 'error');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       
@@ -286,43 +382,14 @@ export default function App() {
           {/* Auth & Backup Action buttons */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             {user ? (
-              <div className="flex items-center gap-2">
-                <span className="hidden lg:flex items-center gap-1.5 text-[11px] bg-emerald-950/40 text-emerald-300 py-1.5 px-3 rounded-lg border border-emerald-500/30">
-                  {isSyncing ? (
-                    <RefreshCw className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
-                  ) : (
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  )}
-                  {isSyncing ? 'Sincronizando...' : 'Nuvem Sincronizada'}
-                </span>
-                
-                {/* User Info Avatar & Sign Out */}
-                <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700/60 rounded-xl p-1 pr-3">
-                  {user.photoURL ? (
-                    <img 
-                      src={user.photoURL} 
-                      alt={user.displayName || 'Usuário'} 
-                      referrerPolicy="no-referrer"
-                      className="w-7 h-7 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                      {user.displayName?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                  )}
-                  <span className="text-xs text-slate-200 font-medium hidden md:inline max-w-[120px] truncate">
-                    {user.displayName?.split(' ')[0]}
-                  </span>
-                  <button
-                    id="btn-google-signout"
-                    onClick={handleLogout}
-                    className="ml-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    title="Sair da Conta Google"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              <span className="hidden lg:flex items-center gap-1.5 text-[11px] bg-emerald-950/40 text-emerald-300 py-1.5 px-3 rounded-lg border border-emerald-500/30">
+                {isSyncing ? (
+                  <RefreshCw className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
+                ) : (
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                )}
+                {isSyncing ? 'Sincronizando...' : 'Nuvem Sincronizada'}
+              </span>
             ) : (
               <button
                 id="btn-google-signin"
@@ -384,50 +451,163 @@ export default function App() {
               <span>Entrar com Google</span>
             </button>
           </div>
+        ) : profileLoading || !userProfile ? (
+          // Confirmando o status de aprovação do usuário
+          <div className="w-full flex flex-col items-center justify-center gap-3 py-24 text-slate-400">
+            <RefreshCw className="w-7 h-7 animate-spin" />
+            <p className="text-sm">Verificando permissão de acesso...</p>
+          </div>
+        ) : !isAdmin && userProfile.status === 'pending' ? (
+          // Login feito, mas aguardando aprovação de um administrador
+          <div className="w-full flex flex-col items-center justify-center gap-4 py-24 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center">
+              <Clock className="w-7 h-7 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800">Aguardando aprovação</h2>
+              <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
+                Seu login foi feito com sucesso, mas o acesso ao sistema precisa ser liberado
+                por um administrador. Assim que for aprovado, você poderá entrar normalmente.
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm font-semibold py-2.5 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sair</span>
+            </button>
+          </div>
+        ) : !isAdmin && userProfile.status === 'rejected' ? (
+          // Acesso recusado por um administrador
+          <div className="w-full flex flex-col items-center justify-center gap-4 py-24 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
+              <ShieldAlert className="w-7 h-7 text-red-500" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800">Acesso não autorizado</h2>
+              <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
+                Um administrador recusou o acesso dessa conta ao sistema. Se você acredita que
+                isso é um engano, entre em contato com o Sgt de Armas.
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm font-semibold py-2.5 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sair</span>
+            </button>
+          </div>
         ) : (
           <>
             {/* Left Sidebar: Dashboard Navigation */}
             <aside className="shrink-0 md:w-56">
-              <nav className="flex md:flex-col gap-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 md:p-3 md:sticky md:top-24">
-                <button
-                  onClick={() => setActiveTab('form')}
-                  className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                    activeTab === 'form'
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                  }`}
-                >
-                  <FileText className="w-4 h-4 shrink-0" />
-                  <span>{editingReport ? 'Editando relatório' : 'Formulário'}</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('reports')}
-                  className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                    activeTab === 'reports'
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                  }`}
-                >
-                  <ClipboardList className="w-4 h-4 shrink-0" />
-                  <span>Relatórios</span>
-                  <span
-                    className={`hidden md:inline-flex ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 ${
-                      activeTab === 'reports' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+              <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 md:p-3 md:sticky md:top-24">
+                <nav className="flex md:flex-col gap-2">
+                  <button
+                    onClick={() => setActiveTab('form')}
+                    className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                      activeTab === 'form'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
-                    {reports.length}
-                  </span>
-                </button>
-              </nav>
+                    <FileText className="w-4 h-4 shrink-0" />
+                    <span>{editingReport ? 'Editando Relatório' : 'Preencher Relatório'}</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('reports')}
+                    className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                      activeTab === 'reports'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
+                  >
+                    <ClipboardList className="w-4 h-4 shrink-0" />
+                    <span>Gestão de Relatórios</span>
+                    <span
+                      className={`hidden md:inline-flex ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 ${
+                        activeTab === 'reports' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      {reports.length}
+                    </span>
+                  </button>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => setActiveTab('users')}
+                      className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                        activeTab === 'users'
+                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                      }`}
+                    >
+                      <Users className="w-4 h-4 shrink-0" />
+                      <span>Gestão de Usuários</span>
+                      {pendingUsersCount > 0 && (
+                        <span
+                          className={`ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 flex ${
+                            activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {pendingUsersCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </nav>
+
+                {/* User info: name shown below the nav instead of the top bar */}
+                {user && (
+                  <div className="flex items-center gap-2 px-1.5 pt-3 mt-2 border-t border-slate-100">
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName || 'Usuário'}
+                        referrerPolicy="no-referrer"
+                        className="w-8 h-8 rounded-lg object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-700 truncate">
+                        {user.displayName || 'Usuário'}
+                      </p>
+                      <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                    </div>
+                    <button
+                      id="btn-google-signout"
+                      onClick={handleLogout}
+                      className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
+                      title="Sair da Conta Google"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </aside>
 
-            {/* Content Panel: Form or Reports, one at a time */}
+            {/* Content Panel: Form, Reports or User Management, one at a time */}
             <section className="flex-1 min-w-0 h-[calc(100vh-190px)] min-h-[500px]">
               {activeTab === 'form' ? (
                 <ReportForm
                   editingReport={editingReport}
                   onSave={handleSaveReport}
                   onCancelEdit={handleCancelEdit}
+                />
+              ) : activeTab === 'users' ? (
+                <UserManagementPanel
+                  profiles={allProfiles}
+                  currentAdminEmail={user?.email || ''}
+                  onApprove={handleApproveUser}
+                  onReject={handleRejectUser}
+                  onRevoke={handleRevokeUser}
                 />
               ) : (
                 <ReportList
