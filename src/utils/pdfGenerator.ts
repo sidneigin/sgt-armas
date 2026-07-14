@@ -47,6 +47,9 @@ async function loadReportPhoto(report: EventReport): Promise<LoadedPhoto> {
 }
 
 // Builds the PDF document for a single report WITHOUT saving/downloading it.
+// Layout compacto: cabeçalho enxuto e fontes que se ajustam automaticamente
+// para que o relatório sempre caiba em uma única página (o parágrafo de
+// descrição reduz a fonte progressivamente conforme o tamanho do texto).
 export async function buildSingleReportPDF(report: EventReport) {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -56,7 +59,9 @@ export async function buildSingleReportPDF(report: EventReport) {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 20;
+  const margin = 16;
+  const contentWidth = pageWidth - (margin * 2);
+  const footerReserve = 12; // espaço reservado no rodapé da página
 
   // Load logo image
   let logoElement: HTMLImageElement | null = null;
@@ -72,61 +77,53 @@ export async function buildSingleReportPDF(report: EventReport) {
   const lightBg: [number, number, number] = [248, 250, 252]; // Slate 50
   const accentColor: [number, number, number] = [79, 70, 229]; // Indigo 600
 
-  // 1. Header Banner
+  // 1. Header Banner — enxuto, estilo timbre profissional (uma única faixa fina)
+  const headerHeight = 22;
   doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(0, 0, pageWidth, 40, 'F');
+  doc.rect(0, 0, pageWidth, headerHeight, 'F');
 
-  // Add logo to Header Banner if loaded
   if (logoElement) {
-    doc.addImage(logoElement, 'JPEG', pageWidth - margin - 25, 7.5, 25, 25);
+    doc.addImage(logoElement, 'JPEG', pageWidth - margin - 15, 4, 15, 15);
   }
 
-  // Title inside Banner
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
-  doc.text('RELATÓRIO SGT ARMAS CMD XXIX - IMC', margin, 18);
+  doc.setFontSize(12.5);
+  doc.text('RELATÓRIO SGT ARMAS CMD XXIX - IMC', margin, 10);
 
-  // Subtitle/Logo text
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('SISTEMA DE REGISTRO E GESTÃO DE RELATÓRIOS', margin, 25);
-
-  // Date of PDF Generation in header
   const genDateStr = new Date().toLocaleDateString('pt-BR');
-  doc.setFontSize(8);
-  doc.setTextColor(156, 163, 175);
-  doc.text(`Emitido em: ${genDateStr}`, margin, 31);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(203, 213, 225); // Slate 300
+  doc.text(`Sistema de Registro e Gestão de Relatórios  •  Emitido em ${genDateStr}`, margin, 16.5);
 
-  let currentY = 52;
+  let currentY = headerHeight + 9;
 
   // Número do relatório, acima do título do evento
   if (report.numeroRelatorio) {
     doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.text(`Relatório Nº ${report.numeroRelatorio}`, margin, currentY);
-    currentY += 7;
+    currentY += 5.5;
   }
 
   // 2. Event Title Block
   doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  
-  // Wrap event title if too long
-  const eventTitleLines = doc.splitTextToSize(report.evento.toUpperCase(), pageWidth - (margin * 2));
+  doc.setFontSize(14.5);
+
+  const eventTitleLines = doc.splitTextToSize(report.evento.toUpperCase(), contentWidth);
   doc.text(eventTitleLines, margin, currentY);
-  currentY += (eventTitleLines.length * 7) + 3;
+  currentY += (eventTitleLines.length * 6) + 2;
 
   // Decorative divider line
   doc.setDrawColor(226, 232, 240); // Slate 200
   doc.setLineWidth(0.5);
   doc.line(margin, currentY, pageWidth - margin, currentY);
-  currentY += 8;
+  currentY += 6;
 
   // 3. Metadata Grid (Key info fields)
-  // We'll create a structured table for the basic fields using autoTable for perfect layout
   const metaData: any[][] = [
     [
       { content: 'Data do Evento:', styles: { fontStyle: 'bold', textColor: secondaryColor } },
@@ -155,29 +152,30 @@ export async function buildSingleReportPDF(report: EventReport) {
     theme: 'plain',
     margin: { left: margin, right: margin },
     styles: {
-      fontSize: 10,
-      cellPadding: 3,
+      fontSize: 9,
+      cellPadding: 2,
       textColor: [15, 23, 42], // Slate 900
     },
     columnStyles: {
-      0: { cellWidth: 35 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 30 },
-      3: { cellWidth: 55 }
+      0: { cellWidth: 37 },
+      1: { cellWidth: 52 },
+      2: { cellWidth: 31 },
+      3: { cellWidth: 58 }
     },
     didDrawPage: (data) => {
       currentY = data.cursor ? data.cursor.y : currentY;
     }
   });
 
-  currentY += 12;
+  currentY += 8;
 
-  // 3.5 Event Photo (if provided)
+  // 3.5 Event Photo (if provided) — altura reduzida e fixa, para preservar
+  // espaço vertical e manter tudo em uma única página.
   if (report.fotoUrl) {
     const photo = await loadReportPhoto(report);
     if (photo.ok) {
-      const maxImgWidthMM = pageWidth - (margin * 2);
-      const maxImgHeightMM = 80;
+      const maxImgWidthMM = contentWidth;
+      const maxImgHeightMM = 45;
       let imgWidthMM = maxImgWidthMM;
       let imgHeightMM = (photo.img.height / photo.img.width) * imgWidthMM;
       if (imgHeightMM > maxImgHeightMM) {
@@ -186,125 +184,126 @@ export async function buildSingleReportPDF(report: EventReport) {
       }
       const imgX = margin + (maxImgWidthMM - imgWidthMM) / 2;
 
-      // Quebra de página se a foto não couber no espaço restante
-      if (currentY + imgHeightMM + 14 > pageHeight - margin - 15) {
-        doc.addPage();
-        currentY = margin + 10;
-
-        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.rect(0, 0, pageWidth, 15, 'F');
-        if (logoElement) {
-          doc.addImage(logoElement, 'JPEG', pageWidth - margin - 10, 2.5, 10, 10);
-        }
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.text(`Relatório: ${report.evento.toUpperCase()}`, margin, 10);
-        currentY = 25;
-      }
-
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
+      doc.setFontSize(10);
       doc.text('FOTO DO EVENTO', margin, currentY);
-      currentY += 5;
+      currentY += 4.5;
 
       doc.setDrawColor(226, 232, 240);
       doc.roundedRect(imgX - 1, currentY - 1, imgWidthMM + 2, imgHeightMM + 2, 1.5, 1.5, 'S');
       doc.addImage(photo.dataUrl, 'JPEG', imgX, currentY, imgWidthMM, imgHeightMM);
 
-      currentY += imgHeightMM + 10;
+      currentY += imgHeightMM + 8;
     } else {
       // A foto existe (fotoUrl preenchido) mas não pôde ser carregada.
-      // Mostra um aviso visível no PDF em vez de simplesmente omitir a foto,
-      // para que o problema (ex: regras do Storage não publicadas) fique claro.
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
+      doc.setFontSize(10);
       doc.text('FOTO DO EVENTO', margin, currentY);
-      currentY += 5;
+      currentY += 4.5;
 
-      const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photo.error}`, pageWidth - (margin * 2) - 8);
-      const warningHeight = (warningLines.length * 5) + 6;
+      const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photo.error}`, contentWidth - 8);
+      const warningHeight = (warningLines.length * 4.5) + 5;
 
       doc.setFillColor(254, 242, 242); // rose-50
       doc.setDrawColor(253, 164, 175); // rose-300
-      doc.roundedRect(margin, currentY, pageWidth - (margin * 2), warningHeight, 1.5, 1.5, 'FD');
+      doc.roundedRect(margin, currentY, contentWidth, warningHeight, 1.5, 1.5, 'FD');
 
       doc.setTextColor(190, 18, 60); // rose-700
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.text(warningLines, margin + 4, currentY + 6);
+      doc.setFontSize(8.5);
+      doc.text(warningLines, margin + 4, currentY + 5.5);
 
-      currentY += warningHeight + 10;
+      currentY += warningHeight + 8;
     }
   }
 
   // 4. Participants Section
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
+  doc.setFontSize(10);
   doc.text('PARTICIPANTES', margin, currentY);
-  currentY += 4;
+  currentY += 3.5;
 
-  const participantsLines = doc.splitTextToSize(report.participantes || 'Nenhum participante informado.', pageWidth - (margin * 2));
-  const participantsHeight = (participantsLines.length * 5) + 6;
+  doc.setFontSize(9);
+  const participantsLines = doc.splitTextToSize(report.participantes || 'Nenhum participante informado.', contentWidth - 8);
+  const participantsHeight = (participantsLines.length * 4.5) + 5;
 
-  // Draw light container for participants
   doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
   doc.setDrawColor(241, 245, 249);
-  doc.roundedRect(margin, currentY, pageWidth - (margin * 2), participantsHeight, 1.5, 1.5, 'FD');
-  
+  doc.roundedRect(margin, currentY, contentWidth, participantsHeight, 1.5, 1.5, 'FD');
+
   doc.setTextColor(51, 65, 85);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text(participantsLines, margin + 4, currentY + 6);
+  doc.text(participantsLines, margin + 4, currentY + 5.5);
 
-  currentY += participantsHeight + 10;
+  currentY += participantsHeight + 8;
 
-  // 5. Detailed Description Section
+  // 5. Detailed Description Section — escolhe a maior fonte (dentre um
+  // conjunto de tamanhos compactos) que faça o texto inteiro caber no
+  // espaço restante da página, garantindo relatório em folha única.
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
+  doc.setFontSize(10);
   doc.text('DESCRIÇÃO DETALHADA', margin, currentY);
   currentY += 5;
 
-  const descLines = doc.splitTextToSize(report.descricao || 'Nenhuma descrição detalhada informada.', pageWidth - (margin * 2));
-  
-  // Print detailed description text
+  const descText = report.descricao || 'Nenhuma descrição detalhada informada.';
+  const remainingHeight = (pageHeight - footerReserve - margin) - currentY;
+
+  const fontSizeCandidates = [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6];
+  let chosenFontSize = fontSizeCandidates[fontSizeCandidates.length - 1];
+  let chosenLines: string[] = [];
+  let chosenLineHeight = chosenFontSize * 0.5;
+
+  for (const size of fontSizeCandidates) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(size);
+    const lines: string[] = doc.splitTextToSize(descText, contentWidth);
+    const lineHeight = size * 0.5;
+    const requiredHeight = lines.length * lineHeight;
+
+    chosenFontSize = size;
+    chosenLines = lines;
+    chosenLineHeight = lineHeight;
+
+    if (requiredHeight <= remainingHeight) {
+      break; // maior fonte que ainda cabe — usa esta
+    }
+  }
+
+  // Print detailed description text (no tamanho já escolhido para caber na página)
   doc.setTextColor(51, 65, 85);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  
-  // Calculate if it fits on this page, otherwise autoTable / manual page breaks would be needed
-  // We can write it line by line or use splitTextToSize and loop over lines
-  const lineHeight = 5.5;
-  for (let i = 0; i < descLines.length; i++) {
-    if (currentY + lineHeight > pageHeight - margin - 15) {
-      // Add page and reset Y
+  doc.setFontSize(chosenFontSize);
+
+  for (let i = 0; i < chosenLines.length; i++) {
+    // Rede de segurança: só em casos extremos (descrição enorme mesmo na
+    // fonte mínima) uma quebra de página é usada, para nunca cortar texto.
+    if (currentY + chosenLineHeight > pageHeight - margin - footerReserve + 3) {
       doc.addPage();
       currentY = margin + 10;
-      
-      // Page background banner on next page (smaller)
+
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.rect(0, 0, pageWidth, 15, 'F');
-      
+
       if (logoElement) {
         doc.addImage(logoElement, 'JPEG', pageWidth - margin - 10, 2.5, 10, 10);
       }
-      
+
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.text(`Relatório: ${report.evento.toUpperCase()}`, margin, 10);
       currentY = 25;
-      
+
       doc.setTextColor(51, 65, 85);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
+      doc.setFontSize(chosenFontSize);
     }
-    doc.text(descLines[i], margin, currentY);
-    currentY += lineHeight;
+    doc.text(chosenLines[i], margin, currentY);
+    currentY += chosenLineHeight;
   }
 
   // Footer decoration on all pages
