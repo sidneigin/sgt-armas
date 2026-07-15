@@ -169,53 +169,32 @@ export async function buildSingleReportPDF(report: EventReport) {
 
   currentY += 8;
 
-  // 3.5 Event Photo (if provided) — altura reduzida e fixa, para preservar
-  // espaço vertical e manter tudo em uma única página.
+  // Carrega a foto do evento antecipadamente (se houver), para já sabermos
+  // quanto espaço ela vai ocupar no fim da página, antes de calcular a
+  // fonte da descrição.
+  let photoResult: LoadedPhoto | null = null;
   if (report.fotoUrl) {
-    const photo = await loadReportPhoto(report);
-    if (photo.ok) {
+    photoResult = await loadReportPhoto(report);
+  }
+  const photoMaxHeightMM = 70; // foto maior, para melhor visualização
+  let photoBlockHeight = 0;
+  let photoImgWidthMM = 0;
+  let photoImgHeightMM = 0;
+  if (photoResult) {
+    if (photoResult.ok) {
       const maxImgWidthMM = contentWidth;
-      const maxImgHeightMM = 45;
-      let imgWidthMM = maxImgWidthMM;
-      let imgHeightMM = (photo.img.height / photo.img.width) * imgWidthMM;
-      if (imgHeightMM > maxImgHeightMM) {
-        imgHeightMM = maxImgHeightMM;
-        imgWidthMM = (photo.img.width / photo.img.height) * imgHeightMM;
+      photoImgWidthMM = maxImgWidthMM;
+      photoImgHeightMM = (photoResult.img.height / photoResult.img.width) * photoImgWidthMM;
+      if (photoImgHeightMM > photoMaxHeightMM) {
+        photoImgHeightMM = photoMaxHeightMM;
+        photoImgWidthMM = (photoResult.img.width / photoResult.img.height) * photoImgHeightMM;
       }
-      const imgX = margin + (maxImgWidthMM - imgWidthMM) / 2;
-
-      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text('FOTO DO EVENTO', margin, currentY);
-      currentY += 4.5;
-
-      doc.setDrawColor(226, 232, 240);
-      doc.roundedRect(imgX - 1, currentY - 1, imgWidthMM + 2, imgHeightMM + 2, 1.5, 1.5, 'S');
-      doc.addImage(photo.dataUrl, 'JPEG', imgX, currentY, imgWidthMM, imgHeightMM);
-
-      currentY += imgHeightMM + 8;
+      photoBlockHeight = 4.5 + photoImgHeightMM + 8; // label + imagem + espaço depois
     } else {
-      // A foto existe (fotoUrl preenchido) mas não pôde ser carregada.
-      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text('FOTO DO EVENTO', margin, currentY);
-      currentY += 4.5;
-
-      const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photo.error}`, contentWidth - 8);
-      const warningHeight = (warningLines.length * 4.5) + 5;
-
-      doc.setFillColor(254, 242, 242); // rose-50
-      doc.setDrawColor(253, 164, 175); // rose-300
-      doc.roundedRect(margin, currentY, contentWidth, warningHeight, 1.5, 1.5, 'FD');
-
-      doc.setTextColor(190, 18, 60); // rose-700
-      doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
-      doc.text(warningLines, margin + 4, currentY + 5.5);
-
-      currentY += warningHeight + 8;
+      const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photoResult.error}`, contentWidth - 8);
+      const warningHeight = (warningLines.length * 4.5) + 5;
+      photoBlockHeight = 4.5 + warningHeight + 8;
     }
   }
 
@@ -250,7 +229,7 @@ export async function buildSingleReportPDF(report: EventReport) {
   currentY += 5;
 
   const descText = report.descricao || 'Nenhuma descrição detalhada informada.';
-  const remainingHeight = (pageHeight - footerReserve - margin) - currentY;
+  const remainingHeight = (pageHeight - footerReserve - margin) - currentY - photoBlockHeight;
 
   const fontSizeCandidates = [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6];
   let chosenFontSize = fontSizeCandidates[fontSizeCandidates.length - 1];
@@ -304,6 +283,56 @@ export async function buildSingleReportPDF(report: EventReport) {
     }
     doc.text(chosenLines[i], margin, currentY);
     currentY += chosenLineHeight;
+  }
+
+  // 6. Foto do evento — por último, em tamanho maior para melhor visualização
+  if (photoResult) {
+    // Quebra de página apenas na hipótese remota de a descrição ter
+    // consumido mais espaço do que o previsto e não sobrar lugar pra foto.
+    if (currentY + photoBlockHeight > pageHeight - margin - footerReserve + 3) {
+      doc.addPage();
+      currentY = margin + 10;
+
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, pageWidth, 15, 'F');
+      if (logoElement) {
+        doc.addImage(logoElement, 'JPEG', pageWidth - margin - 10, 2.5, 10, 10);
+      }
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(`Relatório: ${report.evento.toUpperCase()}`, margin, 10);
+      currentY = 25;
+    }
+
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('FOTO DO EVENTO', margin, currentY);
+    currentY += 4.5;
+
+    if (photoResult.ok) {
+      const imgX = margin + (contentWidth - photoImgWidthMM) / 2;
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(imgX - 1, currentY - 1, photoImgWidthMM + 2, photoImgHeightMM + 2, 1.5, 1.5, 'S');
+      doc.addImage(photoResult.dataUrl, 'JPEG', imgX, currentY, photoImgWidthMM, photoImgHeightMM);
+      currentY += photoImgHeightMM + 8;
+    } else {
+      // A foto existe (fotoUrl preenchido) mas não pôde ser carregada.
+      doc.setFontSize(8.5);
+      const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photoResult.error}`, contentWidth - 8);
+      const warningHeight = (warningLines.length * 4.5) + 5;
+
+      doc.setFillColor(254, 242, 242); // rose-50
+      doc.setDrawColor(253, 164, 175); // rose-300
+      doc.roundedRect(margin, currentY, contentWidth, warningHeight, 1.5, 1.5, 'FD');
+
+      doc.setTextColor(190, 18, 60); // rose-700
+      doc.setFont('helvetica', 'normal');
+      doc.text(warningLines, margin + 4, currentY + 5.5);
+
+      currentY += warningHeight + 8;
+    }
   }
 
   // Footer decoration on all pages
