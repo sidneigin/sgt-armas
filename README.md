@@ -5,12 +5,19 @@ Sistema web para cadastro, consulta e exportação de relatórios de eventos, co
 ## Funcionalidades
 
 - **Login obrigatório com Google** — o conteúdo só é exibido depois de autenticar
-- **Acesso compartilhado**: qualquer pessoa autenticada pode criar, ver, editar e excluir todos os relatórios
+- **Aprovação de acesso**: após o login, o acesso ao sistema precisa ser liberado por um administrador (veja "Gestão de Usuários" abaixo). Quem já usava o sistema antes desse recurso continua com acesso liberado automaticamente
+- **Dashboard com barra lateral**: navegação por abas — **Preencher Relatório**, **Gestão de Relatórios** e (só para administradores) **Gestão de Usuários** — cada uma ocupando a tela toda
+- **Gestão de Usuários** (admins): aprova, recusa ou revoga o acesso de qualquer conta Google ao sistema. Administradores são fixos por e-mail (`sidneibogas@gmail.com`, `claudiosantinao078@gmail.com`, `imc.sidnei@gmail.com`)
+- **Acesso compartilhado aos relatórios**: qualquer pessoa aprovada pode criar, ver, editar e excluir todos os relatórios
+- **Número do relatório**: campo de identificação numérica, presente no formulário, na listagem, no modal de detalhes e nos PDFs
 - **Sincronização em tempo real** via Firebase Firestore
 - **Foto do evento** anexada ao relatório (comprimida automaticamente no navegador e salva direto no Firestore — sem custo de armazenamento extra)
-- **Exportação em PDF** individual (com foto) ou consolidado (tabela com todos os relatórios filtrados)
+- **Exportação em PDF**:
+  - Individual: layout compacto e profissional, com cabeçalho enxuto e fonte da descrição que se ajusta automaticamente para caber em uma única página
+  - Consolidado: tabela com todos os relatórios filtrados (Nº, Evento, Data/Hora, Regional, Comando, Responsável, Conferido por)
 - **Busca e filtro por período** na listagem
 - **Painel de estatísticas** (total de relatórios, eventos por período, etc.)
+- **Ícone do navegador (favicon)** com o brasão "Insanos MC — Sgt de Armas"
 
 ## Stack
 
@@ -34,7 +41,7 @@ Se quiser usar um projeto Firebase próprio, copie `.env.example` para `.env` e 
 
 ## Publicando as regras do Firebase
 
-Sempre que `firestore.rules` for alterado, é preciso publicar de novo:
+Sempre que `firestore.rules` for alterado, é preciso publicar de novo — tanto pela CLI quanto colando manualmente em Firestore Database → Regras no [Firebase Console](https://console.firebase.google.com/):
 
 ```bash
 firebase login
