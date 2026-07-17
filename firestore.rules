@@ -33,22 +33,34 @@ service cloud.firestore {
                 && request.resource.data.role == 'user')
            );
 
-      // Só administradores podem alterar status/role (aprovar, recusar, revogar).
-      // O próprio usuário pode atualizar dados de exibição (nome/foto), mas
-      // nunca o próprio status ou role.
+      // Admins (pelo campo role do PRÓPRIO perfil, não só a lista fixa)
+      // podem alterar status/role de qualquer usuário (aprovar, recusar,
+      // revogar, promover/rebaixar). O próprio usuário pode atualizar dados
+      // de exibição (nome/foto), mas nunca o próprio status ou role.
       allow update: if request.auth != null
         && (
-             isAdminEmail(request.auth.token.email)
+             isAdminByRole()
              || (request.auth.uid == uid
                   && request.resource.data.status == resource.data.status
                   && request.resource.data.role == resource.data.role)
            );
 
-      allow delete: if request.auth != null && isAdminEmail(request.auth.token.email);
+      // Só administradores (pelo campo role do próprio perfil) podem excluir
+      // perfis de usuário.
+      allow delete: if request.auth != null && isAdminByRole();
     }
 
     function isAdminEmail(email) {
       return email in ['sidneibogas@gmail.com', 'claudiosantinao078@gmail.com', 'imc.sidnei@gmail.com'];
+    }
+
+    // Confere se quem está fazendo a requisição é admin de acordo com o
+    // próprio documento salvo em /users (permite que administradores
+    // promovidos depois, e não só os 3 e-mails fixos, também gerenciem
+    // outros usuários).
+    function isAdminByRole() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // Validações de schema compartilhadas entre create e update

@@ -287,3 +287,29 @@ export const setUserApprovalStatus = async (
     approvedBy: approvedByEmail,
   });
 };
+
+// Promove ou rebaixa um usuário entre "admin" e "user" (ação restrita a
+// admins pelas regras do Firestore). Ao promover para admin, o status
+// também é marcado como aprovado, já que um admin sempre tem acesso.
+export const setUserRole = async (
+  uid: string,
+  role: UserProfile['role'],
+  changedByEmail: string
+) => {
+  const profileRef = doc(db, 'users', uid);
+  const updates: Record<string, any> = { role };
+  if (role === 'admin') {
+    updates.status = 'approved';
+    updates.approvedAt = new Date().toISOString();
+    updates.approvedBy = changedByEmail;
+  }
+  await updateDoc(profileRef, updates);
+};
+
+// Exclui definitivamente o perfil de acesso de um usuário (ação restrita a
+// admins pelas regras do Firestore). Não afeta relatórios já criados por
+// essa pessoa. Se ela fizer login de novo, um novo perfil "pending" (ou
+// aprovado automaticamente, se já tiver relatórios) será criado.
+export const deleteUserProfile = async (uid: string) => {
+  await deleteDoc(doc(db, 'users', uid));
+};

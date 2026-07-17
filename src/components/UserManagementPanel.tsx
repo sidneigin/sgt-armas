@@ -1,14 +1,19 @@
 import { useMemo, useState } from 'react';
-import { UserCheck, UserX, ShieldCheck, Clock, RotateCcw, Users as UsersIcon } from 'lucide-react';
+import { UserCheck, UserX, ShieldCheck, Clock, RotateCcw, UserCog, Trash2, Users as UsersIcon } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface UserManagementPanelProps {
   profiles: UserProfile[];
   currentAdminEmail: string;
+  currentUid: string;
   onApprove: (uid: string) => void;
   onReject: (uid: string) => void;
   onRevoke: (uid: string) => void;
+  onChangeRole: (uid: string, role: 'admin' | 'user') => void;
+  onDelete: (uid: string) => void;
 }
+
+type PendingAction = { uid: string; type: 'revoke' | 'delete' | 'role' } | null;
 
 function formatDate(iso?: string) {
   if (!iso) return '';
@@ -73,11 +78,14 @@ function UserRow({
 export default function UserManagementPanel({
   profiles,
   currentAdminEmail,
+  currentUid,
   onApprove,
   onReject,
   onRevoke,
+  onChangeRole,
+  onDelete,
 }: UserManagementPanelProps) {
-  const [confirmRevokeUid, setConfirmRevokeUid] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   const { pending, approved, rejected } = useMemo(() => {
     const pending: UserProfile[] = [];
@@ -91,6 +99,88 @@ export default function UserManagementPanel({
     return { pending, approved, rejected };
   }, [profiles]);
 
+  const clearPending = () => setPendingAction(null);
+
+  // Ações de "tornar admin / tornar padrão" e "excluir", reaproveitadas nas
+  // seções de aprovados e recusados. A própria conta logada não pode se
+  // auto-gerenciar por aqui (evita se rebaixar ou se excluir sem querer).
+  function ManagementActions({ profile }: { profile: UserProfile }) {
+    const isSelf = profile.uid === currentUid;
+    if (isSelf) {
+      return <span className="text-[11px] text-slate-400 italic pr-1">sua conta</span>;
+    }
+
+    if (pendingAction?.uid === profile.uid && pendingAction.type === 'role') {
+      const willBeAdmin = profile.role !== 'admin';
+      return (
+        <>
+          <span className="text-[11px] text-slate-500 pr-1">
+            {willBeAdmin ? 'Tornar administrador?' : 'Tornar usuário padrão?'}
+          </span>
+          <button
+            onClick={() => {
+              onChangeRole(profile.uid, willBeAdmin ? 'admin' : 'user');
+              clearPending();
+            }}
+            className="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          >
+            Confirmar
+          </button>
+          <button
+            onClick={clearPending}
+            className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+        </>
+      );
+    }
+
+    if (pendingAction?.uid === profile.uid && pendingAction.type === 'delete') {
+      return (
+        <>
+          <span className="text-[11px] text-slate-500 pr-1">Excluir usuário?</span>
+          <button
+            onClick={() => {
+              onDelete(profile.uid);
+              clearPending();
+            }}
+            className="text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          >
+            Confirmar
+          </button>
+          <button
+            onClick={clearPending}
+            className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <button
+          onClick={() => setPendingAction({ uid: profile.uid, type: 'role' })}
+          title={profile.role === 'admin' ? 'Tornar usuário padrão' : 'Tornar administrador'}
+          className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+        >
+          <UserCog className="w-3.5 h-3.5" />
+          {profile.role === 'admin' ? 'Tornar padrão' : 'Tornar admin'}
+        </button>
+        <button
+          onClick={() => setPendingAction({ uid: profile.uid, type: 'delete' })}
+          title="Excluir usuário"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          Excluir
+        </button>
+      </>
+    );
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 flex flex-col h-full overflow-hidden">
       <div className="mb-5 border-b border-slate-100 pb-4 flex items-center gap-2.5">
@@ -99,7 +189,7 @@ export default function UserManagementPanel({
         </div>
         <div>
           <h2 className="text-base font-bold text-slate-800">Gestão de Usuários</h2>
-          <p className="text-xs text-slate-400">Aprove ou recuse quem pode acessar o sistema</p>
+          <p className="text-xs text-slate-400">Aprove, recuse, promova ou remova quem acessa o sistema</p>
         </div>
       </div>
 
@@ -116,22 +206,52 @@ export default function UserManagementPanel({
             <div className="space-y-2">
               {pending.map((p) => (
                 <UserRow key={p.uid} profile={p} meta={`Solicitado em ${formatDate(p.createdAt)}`}>
-                  <button
-                    onClick={() => onApprove(p.uid)}
-                    title="Aprovar acesso"
-                    className="flex items-center gap-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <UserCheck className="w-3.5 h-3.5" />
-                    Aprovar
-                  </button>
-                  <button
-                    onClick={() => onReject(p.uid)}
-                    title="Recusar acesso"
-                    className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <UserX className="w-3.5 h-3.5" />
-                    Recusar
-                  </button>
+                  {pendingAction?.uid === p.uid && pendingAction.type === 'delete' ? (
+                    <>
+                      <span className="text-[11px] text-slate-500 pr-1">Excluir solicitação?</span>
+                      <button
+                        onClick={() => {
+                          onDelete(p.uid);
+                          clearPending();
+                        }}
+                        className="text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Confirmar
+                      </button>
+                      <button
+                        onClick={clearPending}
+                        className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onApprove(p.uid)}
+                        title="Aprovar acesso"
+                        className="flex items-center gap-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        Aprovar
+                      </button>
+                      <button
+                        onClick={() => onReject(p.uid)}
+                        title="Recusar acesso"
+                        className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <UserX className="w-3.5 h-3.5" />
+                        Recusar
+                      </button>
+                      <button
+                        onClick={() => setPendingAction({ uid: p.uid, type: 'delete' })}
+                        title="Excluir solicitação"
+                        className="flex items-center text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </UserRow>
               ))}
             </div>
@@ -151,40 +271,43 @@ export default function UserManagementPanel({
                 profile={p}
                 meta={
                   p.role === 'admin'
-                    ? 'Administrador com acesso permanente ao sistema'
+                    ? `Administrador desde ${formatDate(p.approvedAt)}`
                     : `Acesso liberado em ${formatDate(p.approvedAt)}${p.approvedBy ? ` por ${p.approvedBy}` : ''}`
                 }
               >
-                {p.role === 'admin' ? (
-                  <span className="text-[11px] text-slate-400 italic pr-1">acesso fixo</span>
-                ) : confirmRevokeUid === p.uid ? (
+                {pendingAction?.uid === p.uid && pendingAction.type === 'revoke' ? (
                   <>
                     <span className="text-[11px] text-slate-500 pr-1">Revogar acesso?</span>
                     <button
                       onClick={() => {
                         onRevoke(p.uid);
-                        setConfirmRevokeUid(null);
+                        clearPending();
                       }}
                       className="text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       Confirmar
                     </button>
                     <button
-                      onClick={() => setConfirmRevokeUid(null)}
+                      onClick={clearPending}
                       className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       Cancelar
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={() => setConfirmRevokeUid(p.uid)}
-                    title="Revogar acesso"
-                    className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Revogar
-                  </button>
+                  <>
+                    {p.uid !== currentUid && p.role !== 'admin' && !pendingAction && (
+                      <button
+                        onClick={() => setPendingAction({ uid: p.uid, type: 'revoke' })}
+                        title="Revogar acesso"
+                        className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Revogar
+                      </button>
+                    )}
+                    <ManagementActions profile={p} />
+                  </>
                 )}
               </UserRow>
             ))}
@@ -200,18 +323,49 @@ export default function UserManagementPanel({
             </h3>
             <div className="space-y-2">
               {rejected.map((p) => (
-                <UserRow key={p.uid} profile={p}>
-                  <span className="text-[11px] text-slate-400 italic pr-1">
-                    recusado {p.approvedBy && p.approvedBy !== currentAdminEmail ? `por ${p.approvedBy}` : ''} em {formatDate(p.approvedAt)}
-                  </span>
-                  <button
-                    onClick={() => onApprove(p.uid)}
-                    title="Aprovar mesmo assim"
-                    className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <UserCheck className="w-3.5 h-3.5" />
-                    Aprovar
-                  </button>
+                <UserRow
+                  key={p.uid}
+                  profile={p}
+                  meta={`Recusado ${p.approvedBy && p.approvedBy !== currentAdminEmail ? `por ${p.approvedBy} ` : ''}em ${formatDate(p.approvedAt)}`}
+                >
+                  {pendingAction?.uid === p.uid && pendingAction.type === 'delete' ? (
+                    <>
+                      <span className="text-[11px] text-slate-500 pr-1">Excluir usuário?</span>
+                      <button
+                        onClick={() => {
+                          onDelete(p.uid);
+                          clearPending();
+                        }}
+                        className="text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Confirmar
+                      </button>
+                      <button
+                        onClick={clearPending}
+                        className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onApprove(p.uid)}
+                        title="Aprovar mesmo assim"
+                        className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        Aprovar
+                      </button>
+                      <button
+                        onClick={() => setPendingAction({ uid: p.uid, type: 'delete' })}
+                        title="Excluir usuário"
+                        className="flex items-center text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </UserRow>
               ))}
             </div>

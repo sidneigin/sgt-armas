@@ -31,7 +31,8 @@ import {
   subscribeToUserProfile,
   subscribeToAllUserProfiles,
   setUserApprovalStatus,
-  isAdminEmail
+  setUserRole,
+  deleteUserProfile
 } from './lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
 import logoImg from './assets/images/sgt_armas_logo_ui.jpg';
@@ -55,7 +56,7 @@ export default function App() {
   const [profileLoading, setProfileLoading] = useState(false);
   // Lista de todos os perfis (só carregada para administradores, na tela de Gestão de Usuários)
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
-  const isAdmin = isAdminEmail(user?.email);
+  const isAdmin = userProfile?.role === 'admin';
 
   // Load auth state on mount
   useEffect(() => {
@@ -354,6 +355,27 @@ export default function App() {
     }
   };
 
+  const handleChangeUserRole = async (uid: string, role: 'admin' | 'user') => {
+    if (!user?.email) return;
+    try {
+      await setUserRole(uid, role, user.email);
+      triggerAlert(role === 'admin' ? 'Usuário promovido a administrador!' : 'Usuário definido como padrão.');
+    } catch (error) {
+      console.error(error);
+      triggerAlert('Erro ao alterar o tipo de acesso do usuário.', 'error');
+    }
+  };
+
+  const handleDeleteUser = async (uid: string) => {
+    try {
+      await deleteUserProfile(uid);
+      triggerAlert('Usuário excluído da lista de acesso.');
+    } catch (error) {
+      console.error(error);
+      triggerAlert('Erro ao excluir usuário.', 'error');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       
@@ -605,9 +627,12 @@ export default function App() {
                 <UserManagementPanel
                   profiles={allProfiles}
                   currentAdminEmail={user?.email || ''}
+                  currentUid={user?.uid || ''}
                   onApprove={handleApproveUser}
                   onReject={handleRejectUser}
                   onRevoke={handleRevokeUser}
+                  onChangeRole={handleChangeUserRole}
+                  onDelete={handleDeleteUser}
                 />
               ) : (
                 <ReportList
