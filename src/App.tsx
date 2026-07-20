@@ -389,7 +389,7 @@ export default function App() {
         <img
           src={watermarkImg}
           alt=""
-          className="w-[70vmin] h-[70vmin] max-w-none opacity-[0.05] select-none"
+          className="h-[65vmin] w-auto max-w-none opacity-[0.06] select-none"
         />
       </div>
 
