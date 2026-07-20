@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { 
   ShieldCheck, 
   FileText, 
   ClipboardList,
   Search,
+  BarChart3,
   Users,
   Clock,
   ShieldAlert,
@@ -21,6 +22,7 @@ import ReportList from './components/ReportList';
 import ReportModal from './components/ReportModal';
 import UserManagementPanel from './components/UserManagementPanel';
 import SearchPanel from './components/SearchPanel';
+const StatsPage = lazy(() => import('./components/StatsPage'));
 import { 
   initAuth, 
   googleSignIn, 
@@ -47,7 +49,7 @@ export default function App() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeViewReport, setActiveViewReport] = useState<EventReport | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'users'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'stats' | 'users'>('form');
 
   // Firebase Auth & Sync States
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -590,6 +592,18 @@ export default function App() {
                     </span>
                   </button>
 
+                  <button
+                    onClick={() => setActiveTab('stats')}
+                    className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
+                      activeTab === 'stats'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
+                  >
+                    <BarChart3 className="w-4 h-4 shrink-0" />
+                    <span>Estatísticas</span>
+                  </button>
+
                   {isAdmin && (
                     <button
                       onClick={() => setActiveTab('users')}
@@ -663,6 +677,17 @@ export default function App() {
                   onLoadEditReport={handleLoadEditReport}
                   onGenerateSinglePDF={handleGenerateSinglePDF}
                 />
+              ) : activeTab === 'stats' ? (
+                <Suspense
+                  fallback={
+                    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 h-full flex flex-col items-center justify-center gap-3 text-slate-400">
+                      <RefreshCw className="w-6 h-6 animate-spin" />
+                      <p className="text-sm">Carregando estatísticas...</p>
+                    </div>
+                  }
+                >
+                  <StatsPage reports={reports} />
+                </Suspense>
               ) : activeTab === 'users' ? (
                 <UserManagementPanel
                   profiles={allProfiles}
