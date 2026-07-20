@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { UserCheck, UserX, ShieldCheck, Clock, RotateCcw, UserCog, Trash2, Users as UsersIcon } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -36,12 +36,12 @@ function UserRow({
   children,
 }: {
   profile: UserProfile;
-  meta?: React.ReactNode;
-  children: React.ReactNode;
+  meta?: ReactNode;
+  children: ReactNode;
 }) {
   const isAdminRole = profile.role === 'admin';
   return (
-    <div className="flex items-center gap-3 py-3 px-3 rounded-xl border border-slate-100 bg-slate-50/60">
+    <div className="flex items-center flex-wrap sm:flex-nowrap gap-3 py-3 px-3 rounded-xl border border-slate-100 bg-slate-50/60">
       {profile.photoURL ? (
         <img
           src={profile.photoURL}
@@ -70,7 +70,7 @@ function UserRow({
         <p className="text-xs text-slate-400 truncate">{profile.email}</p>
         {meta && <p className="text-[11px] text-slate-400 truncate mt-0.5">{meta}</p>}
       </div>
-      <div className="shrink-0 flex items-center gap-1.5">{children}</div>
+      <div className="w-full sm:w-auto shrink-0 flex items-center flex-wrap justify-end sm:justify-start gap-1.5">{children}</div>
     </div>
   );
 }

@@ -395,9 +395,9 @@ export default function App() {
 
       {/* Top Header Navigation */}
       <header className="bg-slate-900 text-white shadow-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center shrink-0">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center shrink-0">
               <img 
                 src={logoImg} 
                 alt="Insanos MC Logo" 
@@ -405,9 +405,10 @@ export default function App() {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div>
-              <h1 className="text-md sm:text-lg font-bold tracking-tight font-sans">
-                Relatório Sgt Armas CMD XXIX - IMC
+            <div className="min-w-0">
+              <h1 className="text-[13px] leading-tight sm:text-lg font-bold tracking-tight font-sans sm:truncate">
+                <span className="sm:hidden">SGT Armas CMD XXIX</span>
+                <span className="hidden sm:inline">Relatório Sgt Armas CMD XXIX - IMC</span>
               </h1>
               <p className="text-[10px] text-slate-400 font-mono tracking-wider uppercase hidden sm:block">
                 Santinão Cmd Armas IV
@@ -416,7 +417,7 @@ export default function App() {
           </div>
 
           {/* Auth & Backup Action buttons */}
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 shrink-0">
             {user ? (
               <span className="hidden lg:flex items-center gap-1.5 text-[11px] bg-emerald-950/40 text-emerald-300 py-1.5 px-3 rounded-lg border border-emerald-500/30">
                 {isSyncing ? (
@@ -430,11 +431,12 @@ export default function App() {
               <button
                 id="btn-google-signin"
                 onClick={handleLogin}
-                className="flex items-center gap-2 text-xs font-semibold py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-900/10 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold py-2 px-2.5 sm:px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-900/10 transition-all cursor-pointer shrink-0"
                 title="Fazer login com Google para habilitar sincronização em tempo real"
               >
-                <LogIn className="w-4 h-4" />
-                <span>Entrar com Google</span>
+                <LogIn className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Entrar com Google</span>
+                <span className="sm:hidden">Entrar</span>
               </button>
             )}
           </div>
@@ -442,11 +444,11 @@ export default function App() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6 min-h-0">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col md:flex-row gap-4 sm:gap-6 min-h-0">
         
         {/* Floating Global Notification Alert */}
         {alertInfo && (
-          <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-2xl border flex items-center gap-3 max-w-md animate-bounce ${
+          <div className={`fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 p-4 rounded-xl shadow-2xl border flex items-center gap-3 sm:max-w-md animate-bounce ${
             alertInfo.type === 'success' 
               ? 'bg-emerald-50 border-emerald-100 text-emerald-800' 
               : 'bg-rose-50 border-rose-100 text-rose-800'
@@ -540,10 +542,10 @@ export default function App() {
             {/* Left Sidebar: Dashboard Navigation */}
             <aside className="shrink-0 md:w-56">
               <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 md:p-3 md:sticky md:top-24">
-                <nav className="flex md:flex-col gap-2">
+                <nav className="flex flex-wrap md:flex-col gap-1.5 md:gap-2">
                   <button
                     onClick={() => setActiveTab('form')}
-                    className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                       activeTab === 'form'
                         ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
                         : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
@@ -554,7 +556,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => setActiveTab('reports')}
-                    className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                       activeTab === 'reports'
                         ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
                         : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
@@ -574,7 +576,7 @@ export default function App() {
                   {isAdmin && (
                     <button
                       onClick={() => setActiveTab('users')}
-                      className={`flex items-center gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-3 py-2.5 md:py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                         activeTab === 'users'
                           ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
                           : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
@@ -584,7 +586,7 @@ export default function App() {
                       <span>Gestão de Usuários</span>
                       {pendingUsersCount > 0 && (
                         <span
-                          className={`ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 flex ${
+                          className={`hidden md:flex ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 ${
                             activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'
                           }`}
                         >
@@ -630,7 +632,7 @@ export default function App() {
             </aside>
 
             {/* Content Panel: Form, Reports or User Management, one at a time */}
-            <section className="flex-1 min-w-0 h-[calc(100vh-190px)] min-h-[500px]">
+            <section className="flex-1 min-w-0 h-[calc(100vh-260px)] sm:h-[calc(100vh-190px)] min-h-[420px] sm:min-h-[500px]">
               {activeTab === 'form' ? (
                 <ReportForm
                   editingReport={editingReport}

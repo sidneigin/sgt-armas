@@ -159,7 +159,80 @@ export default function ReportList({
             </p>
           </div>
         ) : (
-          <div className="inline-block min-w-full align-middle">
+          <>
+            {/* Versão em cards para celular (a tabela fica difícil de usar em telas pequenas) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {filteredReports.map((report) => {
+                const isSelected = report.id === selectedReportId;
+                return (
+                  <div
+                    key={report.id}
+                    onClick={() => onSelectReport(report.id)}
+                    className={`p-3 flex gap-3 cursor-pointer transition-all ${
+                      isSelected ? 'bg-indigo-50/70' : 'active:bg-slate-50'
+                    }`}
+                  >
+                    <ReportThumbnail report={report} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-[11px] font-mono shrink-0 ${isSelected ? 'text-indigo-700 font-bold' : 'text-slate-400'}`}>
+                          {report.numeroRelatorio || '—'}
+                        </span>
+                        <span className={`text-sm truncate ${isSelected ? 'text-indigo-900 font-bold' : 'text-slate-800 font-semibold'}`}>
+                          {report.evento}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          {formatDate(report.data)}
+                        </span>
+                        <span className="flex items-center gap-1 truncate">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{report.regional}</span>
+                        </span>
+                        <span className="flex items-center gap-1 truncate">
+                          <User className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{report.responsavel}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className="flex flex-col items-center justify-center gap-1 shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => onViewReport(report)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Visualizar em Tela Cheia"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onLoadEditReport(report)}
+                        className="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors cursor-pointer"
+                        title="Carregar para Edição"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          onSelectReport(report.id);
+                          setShowConfirmDelete(true);
+                        }}
+                        className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Excluir Relatório"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Tabela para telas médias/grandes */}
+            <div className="hidden md:block min-w-full align-middle">
             <table className="min-w-full divide-y divide-slate-100 table-fixed">
               <thead className="bg-slate-50 sticky top-0 z-10">
                 <tr>
@@ -263,7 +336,8 @@ export default function ReportList({
                 })}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
 
