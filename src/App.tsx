@@ -3,6 +3,7 @@ import {
   ShieldCheck, 
   FileText, 
   ClipboardList,
+  Search,
   Users,
   Clock,
   ShieldAlert,
@@ -19,6 +20,7 @@ import ReportForm from './components/ReportForm';
 import ReportList from './components/ReportList';
 import ReportModal from './components/ReportModal';
 import UserManagementPanel from './components/UserManagementPanel';
+import SearchPanel from './components/SearchPanel';
 import { 
   initAuth, 
   googleSignIn, 
@@ -45,7 +47,7 @@ export default function App() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeViewReport, setActiveViewReport] = useState<EventReport | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [activeTab, setActiveTab] = useState<'form' | 'reports' | 'users'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'users'>('form');
 
   // Firebase Auth & Sync States
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -316,6 +318,10 @@ export default function App() {
     }
   };
 
+  const handleGenerateSinglePDF = (report: EventReport) => {
+    import('./utils/pdfGenerator').then(({ generateSingleReportPDF }) => generateSingleReportPDF(report));
+  };
+
   const handleCancelEdit = () => {
     setEditingReport(null);
   };
@@ -555,6 +561,17 @@ export default function App() {
                     <span>{editingReport ? 'Editando Relatório' : 'Preencher Relatório'}</span>
                   </button>
                   <button
+                    onClick={() => setActiveTab('search')}
+                    className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
+                      activeTab === 'search'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
+                  >
+                    <Search className="w-4 h-4 shrink-0" />
+                    <span>Pesquisar</span>
+                  </button>
+                  <button
                     onClick={() => setActiveTab('reports')}
                     className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                       activeTab === 'reports'
@@ -639,6 +656,13 @@ export default function App() {
                   onSave={handleSaveReport}
                   onCancelEdit={handleCancelEdit}
                 />
+              ) : activeTab === 'search' ? (
+                <SearchPanel
+                  reports={reports}
+                  onViewReport={handleViewReport}
+                  onLoadEditReport={handleLoadEditReport}
+                  onGenerateSinglePDF={handleGenerateSinglePDF}
+                />
               ) : activeTab === 'users' ? (
                 <UserManagementPanel
                   profiles={allProfiles}
@@ -659,7 +683,7 @@ export default function App() {
                   onViewReport={handleViewReport}
                   onLoadEditReport={handleLoadEditReport}
                   onDeleteReport={handleDeleteReport}
-                  onGenerateSinglePDF={(report) => import('./utils/pdfGenerator').then(({ generateSingleReportPDF }) => generateSingleReportPDF(report))}
+                  onGenerateSinglePDF={handleGenerateSinglePDF}
                   onGenerateConsolidatedPDF={(filteredReports) => import('./utils/pdfGenerator').then(({ generateConsolidatedReportsPDF }) => generateConsolidatedReportsPDF(filteredReports))}
                 />
               )}
