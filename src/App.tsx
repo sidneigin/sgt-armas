@@ -36,6 +36,7 @@ import {
 } from './lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
 import logoImg from './assets/images/sgt_armas_logo_ui.jpg';
+import watermarkImg from './assets/images/sgt_armas_watermark.png';
 
 export default function App() {
   const [reports, setReports] = useState<EventReport[]>([]);
@@ -377,8 +378,21 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
-      
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans relative">
+
+      {/* Marca d'água de fundo: brasão Insanos MC, fixo e semi-transparente,
+          atrás de todo o conteúdo, sem interferir nos cliques. */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden"
+        aria-hidden="true"
+      >
+        <img
+          src={watermarkImg}
+          alt=""
+          className="w-[70vmin] h-[70vmin] max-w-none opacity-[0.05] select-none"
+        />
+      </div>
+
       {/* Top Header Navigation */}
       <header className="bg-slate-900 text-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
