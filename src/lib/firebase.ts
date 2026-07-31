@@ -121,8 +121,12 @@ export const subscribeToReports = (
         } as EventReport);
       });
       
-      // Sort in memory by createdAt descending
-      reports.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      // Sort in memory by numeroRelatorio descending (maior para menor)
+      reports.sort((a, b) => {
+        const numA = parseInt(a.numeroRelatorio || '0', 10);
+        const numB = parseInt(b.numeroRelatorio || '0', 10);
+        return numB - numA;
+      });
       
       onUpdate(reports);
     },
