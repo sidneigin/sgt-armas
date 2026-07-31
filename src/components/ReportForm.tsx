@@ -416,7 +416,7 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
               id="input-participantes"
               value={participantes}
               onChange={(e) => setParticipantes(e.target.value)}
-              placeholder="Ex: Sidnei Bogas, Ana Souza, Carlos Eduardo..."
+              placeholder="Ex: João Silva, Maria Souza, Carlos Eduardo..."
               rows={2}
               className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border ${
                 errors.participantes ? 'border-rose-400 bg-rose-50/10 dark:bg-rose-900/30 focus:ring-rose-200 dark:focus:ring-rose-700' : 'border-slate-200 dark:border-slate-600 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-800 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100'
