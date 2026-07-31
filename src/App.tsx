@@ -418,9 +418,7 @@ export default function App() {
                 <span className="sm:hidden">SGT Armas CMD XXIX</span>
                 <span className="hidden sm:inline">Relatório Sgt Armas CMD XXIX - IMC</span>
               </h1>
-              <p className="text-[10px] text-slate-400 font-mono tracking-wider uppercase hidden sm:block">
-                Santinão Cmd Armas IV
-              </p>
+
             </div>
           </div>
 
