@@ -43,8 +43,8 @@ export default function DateFilterPanel({ filter, onChange }: DateFilterPanelPro
         onClick={() => setIsOpen((v) => !v)}
         className={`flex items-center gap-2 text-xs font-semibold py-2 px-3.5 rounded-xl border transition-all cursor-pointer ${
           isActive
-            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+            ? 'bg-indigo-50 dark:bg-indigo-900 border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-400'
+            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
         }`}
       >
         <Calendar className="w-4 h-4" />
@@ -57,13 +57,13 @@ export default function DateFilterPanel({ filter, onChange }: DateFilterPanelPro
           {/* Click-away backdrop */}
           <div className="fixed inset-0 z-20" onClick={() => setIsOpen(false)} />
 
-          <div className="absolute right-0 sm:left-0 mt-2 z-30 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 space-y-4">
+          <div className="absolute right-0 sm:left-0 mt-2 z-30 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-slate-700">Filtrar por data</p>
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Filtrar por data</p>
               {isActive && (
                 <button
                   onClick={handleClear}
-                  className="text-[11px] text-rose-500 hover:text-rose-700 font-medium flex items-center gap-1 cursor-pointer"
+                  className="text-[11px] text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-medium flex items-center gap-1 cursor-pointer"
                 >
                   <X className="w-3 h-3" /> Limpar
                 </button>
@@ -72,7 +72,7 @@ export default function DateFilterPanel({ filter, onChange }: DateFilterPanelPro
 
             {/* Quick shortcuts */}
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Atalhos rápidos</p>
+              <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Atalhos rápidos</p>
               <div className="grid grid-cols-4 gap-1.5">
                 {QUICK_OPTIONS.map((opt) => (
                   <button
@@ -81,7 +81,7 @@ export default function DateFilterPanel({ filter, onChange }: DateFilterPanelPro
                     className={`text-[11px] font-semibold py-1.5 rounded-lg transition-all cursor-pointer ${
                       filter.mode === 'quick' && filter.quickRange === opt.value
                         ? 'bg-indigo-600 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                     }`}
                   >
                     {opt.label}
@@ -92,32 +92,32 @@ export default function DateFilterPanel({ filter, onChange }: DateFilterPanelPro
 
             {/* Specific month/year */}
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Mês específico</p>
+              <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Mês específico</p>
               <input
                 type="month"
                 value={filter.mode === 'month' ? filter.monthValue : ''}
                 onChange={(e) => handleMonthChange(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
               />
             </div>
 
             {/* Custom range */}
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Intervalo personalizado</p>
+              <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Intervalo personalizado</p>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="date"
                   placeholder="De"
                   value={filter.mode === 'range' ? filter.rangeStart : ''}
                   onChange={(e) => handleRangeChange('rangeStart', e.target.value)}
-                  className="w-full px-2.5 py-2 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
+                  className="w-full px-2.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
                 />
                 <input
                   type="date"
                   placeholder="Até"
                   value={filter.mode === 'range' ? filter.rangeEnd : ''}
                   onChange={(e) => handleRangeChange('rangeEnd', e.target.value)}
-                  className="w-full px-2.5 py-2 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
+                  className="w-full px-2.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
                 />
               </div>
             </div>

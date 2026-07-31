@@ -10,14 +10,14 @@ import StatsDashboard from './StatsDashboard';
 // base64 já disponível em report.fotoUrl, então não precisa de nenhuma busca.
 function ReportThumbnail({ report }: { report: EventReport }) {
   if (!report.fotoUrl) {
-    return <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200" />;
+    return <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600" />;
   }
 
   return (
     <img
       src={report.fotoUrl}
       alt=""
-      className="w-8 h-8 rounded-lg object-cover border border-slate-200"
+      className="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-600"
     />
   );
 }
@@ -81,16 +81,16 @@ export default function ReportList({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 flex flex-col h-full overflow-hidden relative">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-6 flex flex-col h-full overflow-hidden relative">
       
       {/* List Header and Search */}
-      <div className="space-y-4 mb-5 pb-4 border-b border-slate-100">
+      <div className="space-y-4 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold font-sans tracking-tight text-slate-800">
+            <h2 className="text-lg font-bold font-sans tracking-tight text-slate-800 dark:text-slate-100">
               Relatórios Salvos ({filteredReports.length})
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 dark:text-slate-500">
               Selecione um relatório na lista para realizar ações ou gerar PDF.
             </p>
           </div>
@@ -101,7 +101,7 @@ export default function ReportList({
               id="btn-pdf-consolidated"
               onClick={() => onGenerateConsolidatedPDF(filteredReports)}
               disabled={filteredReports.length === 0}
-              className="flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 disabled:opacity-50 disabled:pointer-events-none text-slate-700 text-xs font-semibold py-2 px-3.5 rounded-xl transition-all cursor-pointer"
+              className="flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 active:bg-slate-300 disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3.5 rounded-xl transition-all cursor-pointer"
               title="Gera um PDF em tabela com todos os relatórios que estão listados abaixo"
             >
               <Layers className="w-4 h-4 text-indigo-600" />
@@ -119,13 +119,13 @@ export default function ReportList({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por número, evento, regional, comando ou responsável..."
-              className="w-full pl-9 pr-8 py-2 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-indigo-100 outline-none focus:ring-3 transition-all"
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-800 outline-none focus:ring-3 transition-all"
             />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3" />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 font-medium font-sans bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded-md cursor-pointer"
+                className="absolute right-3 top-2.5 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium font-sans bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-1.5 py-0.5 rounded-md cursor-pointer"
               >
                 Limpar
               </button>
@@ -145,14 +145,14 @@ export default function ReportList({
       </div>
 
       {/* Main Table Container */}
-      <div className="flex-1 overflow-auto min-h-[250px] border border-slate-100 rounded-xl">
+      <div className="flex-1 overflow-auto min-h-[250px] border border-slate-100 dark:border-slate-700 rounded-xl scrollbar-thin scrollbar-track-slate-100 dark:scrollbar-track-slate-700 scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-500">
         {filteredReports.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-slate-50/50">
-            <div className="bg-slate-100 p-3.5 rounded-2xl mb-3 text-slate-400">
+          <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="bg-slate-100 dark:bg-slate-700 p-3.5 rounded-2xl mb-3 text-slate-400 dark:text-slate-500">
               <Search className="w-6 h-6" />
             </div>
-            <p className="text-sm font-semibold text-slate-600 font-sans">Nenhum relatório encontrado</p>
-            <p className="text-xs text-slate-400 mt-1 max-w-sm">
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 font-sans">Nenhum relatório encontrado</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm">
               {reports.length === 0
                 ? 'Cadastre o primeiro relatório utilizando o formulário no painel da esquerda.'
                 : 'Não encontramos relatórios correspondentes aos termos buscados.'}
@@ -161,38 +161,38 @@ export default function ReportList({
         ) : (
           <>
             {/* Versão em cards para celular (a tabela fica difícil de usar em telas pequenas) */}
-            <div className="md:hidden divide-y divide-slate-100">
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700">
               {filteredReports.map((report) => {
                 const isSelected = report.id === selectedReportId;
                 return (
                   <div
                     key={report.id}
                     onClick={() => onSelectReport(report.id)}
-                    className={`p-3 flex gap-3 cursor-pointer transition-all ${
-                      isSelected ? 'bg-indigo-50/70' : 'active:bg-slate-50'
-                    }`}
+                      className={`p-3 flex gap-3 cursor-pointer transition-all ${
+                        isSelected ? 'bg-indigo-50/70 dark:bg-indigo-900/30' : 'active:bg-slate-50 dark:active:bg-slate-700'
+                      }`}
                   >
                     <ReportThumbnail report={report} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-2">
-                        <span className={`text-[11px] font-mono shrink-0 ${isSelected ? 'text-indigo-700 font-bold' : 'text-slate-400'}`}>
+                        <span className={`text-[11px] font-mono shrink-0 ${isSelected ? 'text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-400 dark:text-slate-500'}`}>
                           {report.numeroRelatorio || '—'}
                         </span>
-                        <span className={`text-sm truncate ${isSelected ? 'text-indigo-900 font-bold' : 'text-slate-800 font-semibold'}`}>
+                        <span className={`text-sm truncate ${isSelected ? 'text-indigo-900 dark:text-indigo-200 font-bold' : 'text-slate-800 dark:text-slate-100 font-semibold'}`}>
                           {report.evento}
                         </span>
                       </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                           {formatDate(report.data)}
                         </span>
                         <span className="flex items-center gap-1 truncate">
-                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <MapPin className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
                           <span className="truncate">{report.regional}</span>
                         </span>
                         <span className="flex items-center gap-1 truncate">
-                          <User className="w-3 h-3 text-slate-400 shrink-0" />
+                          <User className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
                           <span className="truncate">{report.responsavel}</span>
                         </span>
                       </div>
@@ -203,14 +203,14 @@ export default function ReportList({
                     >
                       <button
                         onClick={() => onViewReport(report)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                         title="Visualizar em Tela Cheia"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onLoadEditReport(report)}
-                        className="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors cursor-pointer"
                         title="Carregar para Edição"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -220,7 +220,7 @@ export default function ReportList({
                           onSelectReport(report.id);
                           setShowConfirmDelete(true);
                         }}
-                        className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900 transition-colors cursor-pointer"
                         title="Excluir Relatório"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -233,20 +233,20 @@ export default function ReportList({
 
             {/* Tabela para telas médias/grandes */}
             <div className="hidden md:block min-w-full align-middle">
-            <table className="min-w-full divide-y divide-slate-100 table-fixed">
-              <thead className="bg-slate-50 sticky top-0 z-10">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-700 table-fixed">
+              <thead className="bg-slate-50 dark:bg-slate-900 sticky top-0 z-10">
                 <tr>
                   <th scope="col" className="w-12 px-2 py-3"></th>
-                  <th scope="col" className="w-20 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nº</th>
-                  <th scope="col" className="w-1/4 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Evento</th>
-                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Data</th>
-                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Regional</th>
-                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Comando</th>
-                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Responsável</th>
-                  <th scope="col" className="w-1/12 px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Ações</th>
+                  <th scope="col" className="w-20 px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nº</th>
+                  <th scope="col" className="w-1/4 px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Evento</th>
+                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Data</th>
+                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Regional</th>
+                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Comando</th>
+                  <th scope="col" className="w-1/6 px-4 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Responsável</th>
+                  <th scope="col" className="w-1/12 px-4 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-slate-100">
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
                 {filteredReports.map((report) => {
                   const isSelected = report.id === selectedReportId;
                   return (
@@ -254,8 +254,8 @@ export default function ReportList({
                       key={report.id}
                       onClick={() => onSelectReport(report.id)}
                       onDoubleClick={() => onDoubleSelectReport(report)}
-                      className={`group hover:bg-slate-50/80 transition-all cursor-pointer text-slate-700 ${
-                        isSelected ? 'bg-indigo-50/70 hover:bg-indigo-50/90 text-indigo-950 font-medium' : ''
+                      className={`group hover:bg-slate-50/80 dark:hover:bg-slate-700/50 transition-all cursor-pointer text-slate-700 dark:text-slate-200 ${
+                        isSelected ? 'bg-indigo-50/70 dark:bg-indigo-900/30 hover:bg-indigo-50/90 dark:hover:bg-indigo-900/40 text-indigo-950 dark:text-indigo-200 font-medium' : ''
                       }`}
                     >
                       {/* Miniatura da foto */}
@@ -264,41 +264,41 @@ export default function ReportList({
                       </td>
                       {/* Número do relatório */}
                       <td className="px-4 py-3 text-sm truncate font-sans">
-                        <span className={`block truncate ${isSelected ? 'text-indigo-900 font-bold' : 'text-slate-600'}`}>
+                        <span className={`block truncate ${isSelected ? 'text-indigo-900 dark:text-indigo-200 font-bold' : 'text-slate-600 dark:text-slate-300'}`}>
                           {report.numeroRelatorio || '—'}
                         </span>
                       </td>
                       {/* Evento */}
                       <td className="px-4 py-3 text-sm truncate font-sans">
-                        <span className={`block truncate ${isSelected ? 'text-indigo-900 font-bold' : 'text-slate-800'}`}>
+                        <span className={`block truncate ${isSelected ? 'text-indigo-900 dark:text-indigo-200 font-bold' : 'text-slate-800 dark:text-slate-100'}`}>
                           {report.evento}
                         </span>
                       </td>
                       {/* Data */}
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
-                        <span className="flex items-center gap-1.5 text-slate-500 group-hover:text-slate-700">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                           {formatDate(report.data)}
                         </span>
                       </td>
                       {/* Regional */}
                       <td className="px-4 py-3 text-sm truncate">
-                        <span className="flex items-center gap-1.5 text-slate-500 group-hover:text-slate-700 truncate">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 truncate">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                           <span className="truncate">{report.regional}</span>
                         </span>
                       </td>
                       {/* Comando */}
                       <td className="px-4 py-3 text-sm truncate">
-                        <span className="flex items-center gap-1.5 text-slate-500 group-hover:text-slate-700 truncate">
-                          <Shield className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 truncate">
+                          <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                           <span className="truncate">{report.comando}</span>
                         </span>
                       </td>
                       {/* Responsavel */}
                       <td className="px-4 py-3 text-sm truncate">
-                        <span className="flex items-center gap-1.5 text-slate-500 group-hover:text-slate-700 truncate">
-                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 truncate">
+                          <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                           <span className="truncate">{report.responsavel}</span>
                         </span>
                       </td>
@@ -307,14 +307,14 @@ export default function ReportList({
                         <div className="flex items-center justify-end gap-0.5">
                           <button
                             onClick={() => onViewReport(report)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                             title="Visualizar em Tela Cheia"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => onLoadEditReport(report)}
-                            className="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors cursor-pointer"
                             title="Carregar para Edição"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -324,7 +324,7 @@ export default function ReportList({
                               onSelectReport(report.id);
                               setShowConfirmDelete(true);
                             }}
-                            className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900 transition-colors cursor-pointer"
                             title="Excluir Relatório"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -342,12 +342,12 @@ export default function ReportList({
       </div>
 
       {/* Selected Action Panel underneath */}
-      <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+      <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex flex-wrap gap-2">
         <button
           id="btn-action-view"
           onClick={() => selectedReport && onViewReport(selectedReport)}
           disabled={!selectedReportId}
-          className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-900 active:bg-black disabled:opacity-50 disabled:pointer-events-none text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-all cursor-pointer"
+          className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 active:bg-black disabled:opacity-50 disabled:pointer-events-none text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-all cursor-pointer"
         >
           <Eye className="w-4 h-4" />
           Visualizar
@@ -357,7 +357,7 @@ export default function ReportList({
           id="btn-action-edit"
           onClick={() => selectedReport && onLoadEditReport(selectedReport)}
           disabled={!selectedReportId}
-          className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200 disabled:opacity-50 disabled:pointer-events-none text-slate-700 text-xs font-semibold py-2.5 px-3 rounded-xl transition-all cursor-pointer"
+          className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 active:bg-slate-200 border border-slate-200 dark:border-slate-600 disabled:opacity-50 disabled:pointer-events-none text-slate-700 dark:text-slate-200 text-xs font-semibold py-2.5 px-3 rounded-xl transition-all cursor-pointer"
         >
           <Edit3 className="w-4 h-4 text-indigo-500" />
           Carregar para edição
@@ -367,7 +367,7 @@ export default function ReportList({
           id="btn-action-delete"
           onClick={handleDeleteClick}
           disabled={!selectedReportId}
-          className="flex-1 min-w-[100px] flex items-center justify-center gap-1.5 bg-white hover:bg-rose-50 hover:border-rose-200 active:bg-rose-100 border border-slate-200 disabled:opacity-50 disabled:pointer-events-none text-rose-600 text-xs font-semibold py-2.5 px-3 rounded-xl transition-all cursor-pointer"
+          className="flex-1 min-w-[100px] flex items-center justify-center gap-1.5 bg-white dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-900 hover:border-rose-200 dark:hover:border-rose-700 active:bg-rose-100 border border-slate-200 dark:border-slate-600 disabled:opacity-50 disabled:pointer-events-none text-rose-600 text-xs font-semibold py-2.5 px-3 rounded-xl transition-all cursor-pointer"
         >
           <Trash2 className="w-4 h-4" />
           Excluir
@@ -387,21 +387,21 @@ export default function ReportList({
       {/* Delete Confirmation Modal Overlay */}
       {showConfirmDelete && selectedReport && (
         <div className="absolute inset-0 z-30 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-5 shadow-2xl border border-slate-100 max-w-sm w-full space-y-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-2xl border border-slate-100 dark:border-slate-700 max-w-sm w-full space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
-              <div className="bg-rose-50 p-2 rounded-xl">
+              <div className="bg-rose-50 dark:bg-rose-900 p-2 rounded-xl">
                 <AlertTriangle className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-slate-800">Confirmar Exclusão</h4>
+              <h4 className="font-bold text-slate-800 dark:text-slate-100">Confirmar Exclusão</h4>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Deseja realmente excluir o relatório do evento <strong className="text-slate-800">"{selectedReport.evento}"</strong>? Esta ação é permanente e não poderá ser desfeita.
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Deseja realmente excluir o relatório do evento <strong className="text-slate-800 dark:text-slate-100">"{selectedReport.evento}"</strong>? Esta ação é permanente e não poderá ser desfeita.
             </p>
             <div className="flex gap-2 justify-end">
               <button
                 id="btn-confirm-delete-cancel"
                 onClick={() => setShowConfirmDelete(false)}
-                className="bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold px-4 py-2 rounded-lg transition-all cursor-pointer"
+                className="bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 active:bg-slate-200 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-xs font-semibold px-4 py-2 rounded-lg transition-all cursor-pointer"
               >
                 Cancelar
               </button>

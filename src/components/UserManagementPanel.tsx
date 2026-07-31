@@ -41,7 +41,7 @@ function UserRow({
 }) {
   const isAdminRole = profile.role === 'admin';
   return (
-    <div className="flex items-center flex-wrap sm:flex-nowrap gap-3 py-3 px-3 rounded-xl border border-slate-100 bg-slate-50/60">
+    <div className="flex items-center flex-wrap sm:flex-nowrap gap-3 py-3 px-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60">
       {profile.photoURL ? (
         <img
           src={profile.photoURL}
@@ -50,25 +50,25 @@ function UserRow({
           className="w-9 h-9 rounded-lg object-cover shrink-0"
         />
       ) : (
-        <div className="w-9 h-9 rounded-lg bg-slate-300 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-slate-300 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs shrink-0">
           {profile.displayName?.charAt(0).toUpperCase() || 'U'}
         </div>
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm font-semibold text-slate-700 truncate">{profile.displayName}</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{profile.displayName}</p>
           <span
             className={`text-[10px] font-bold rounded-full px-2 py-0.5 shrink-0 border ${
               isAdminRole
-                ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
-                : 'text-slate-500 bg-slate-100 border-slate-200'
+                ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900 border-emerald-200'
+                : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600'
             }`}
           >
             {isAdminRole ? 'ADMINISTRADOR' : 'USUÁRIO PADRÃO'}
           </span>
         </div>
-        <p className="text-xs text-slate-400 truncate">{profile.email}</p>
-        {meta && <p className="text-[11px] text-slate-400 truncate mt-0.5">{meta}</p>}
+        <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{profile.email}</p>
+        {meta && <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">{meta}</p>}
       </div>
       <div className="w-full sm:w-auto shrink-0 flex items-center flex-wrap justify-end sm:justify-start gap-1.5">{children}</div>
     </div>
@@ -107,14 +107,14 @@ export default function UserManagementPanel({
   function ManagementActions({ profile }: { profile: UserProfile }) {
     const isSelf = profile.uid === currentUid;
     if (isSelf) {
-      return <span className="text-[11px] text-slate-400 italic pr-1">sua conta</span>;
+      return <span className="text-[11px] text-slate-400 dark:text-slate-500 italic pr-1">sua conta</span>;
     }
 
     if (pendingAction?.uid === profile.uid && pendingAction.type === 'role') {
       const willBeAdmin = profile.role !== 'admin';
       return (
         <>
-          <span className="text-[11px] text-slate-500 pr-1">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 pr-1">
             {willBeAdmin ? 'Tornar administrador?' : 'Tornar usuário padrão?'}
           </span>
           <button
@@ -128,7 +128,7 @@ export default function UserManagementPanel({
           </button>
           <button
             onClick={clearPending}
-            className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+            className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
           >
             Cancelar
           </button>
@@ -139,7 +139,7 @@ export default function UserManagementPanel({
     if (pendingAction?.uid === profile.uid && pendingAction.type === 'delete') {
       return (
         <>
-          <span className="text-[11px] text-slate-500 pr-1">Excluir usuário?</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 pr-1">Excluir usuário?</span>
           <button
             onClick={() => {
               onDelete(profile.uid);
@@ -151,7 +151,7 @@ export default function UserManagementPanel({
           </button>
           <button
             onClick={clearPending}
-            className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+            className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
           >
             Cancelar
           </button>
@@ -164,7 +164,7 @@ export default function UserManagementPanel({
         <button
           onClick={() => setPendingAction({ uid: profile.uid, type: 'role' })}
           title={profile.role === 'admin' ? 'Tornar usuário padrão' : 'Tornar administrador'}
-          className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
         >
           <UserCog className="w-3.5 h-3.5" />
           {profile.role === 'admin' ? 'Tornar padrão' : 'Tornar admin'}
@@ -172,7 +172,7 @@ export default function UserManagementPanel({
         <button
           onClick={() => setPendingAction({ uid: profile.uid, type: 'delete' })}
           title="Excluir usuário"
-          className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
           Excluir
@@ -182,14 +182,14 @@ export default function UserManagementPanel({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 flex flex-col h-full overflow-hidden">
-      <div className="mb-5 border-b border-slate-100 pb-4 flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-6 flex flex-col h-full overflow-hidden">
+      <div className="mb-5 border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-2.5">
+        <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-900 border border-emerald-100 dark:border-emerald-700 flex items-center justify-center shrink-0">
           <UsersIcon className="w-4.5 h-4.5 text-emerald-600" />
         </div>
         <div>
-          <h2 className="text-base font-bold text-slate-800">Gestão de Usuários</h2>
-          <p className="text-xs text-slate-400">Aprove, recuse, promova ou remova quem acessa o sistema</p>
+          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Gestão de Usuários</h2>
+          <p className="text-xs text-slate-400 dark:text-slate-500">Aprove, recuse, promova ou remova quem acessa o sistema</p>
         </div>
       </div>
 
@@ -201,14 +201,14 @@ export default function UserManagementPanel({
             Pendentes de aprovação ({pending.length})
           </h3>
           {pending.length === 0 ? (
-            <p className="text-sm text-slate-400 py-2">Nenhuma solicitação pendente no momento.</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 py-2">Nenhuma solicitação pendente no momento.</p>
           ) : (
             <div className="space-y-2">
               {pending.map((p) => (
                 <UserRow key={p.uid} profile={p} meta={`Solicitado em ${formatDate(p.createdAt)}`}>
                   {pendingAction?.uid === p.uid && pendingAction.type === 'delete' ? (
                     <>
-                      <span className="text-[11px] text-slate-500 pr-1">Excluir solicitação?</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 pr-1">Excluir solicitação?</span>
                       <button
                         onClick={() => {
                           onDelete(p.uid);
@@ -220,7 +220,7 @@ export default function UserManagementPanel({
                       </button>
                       <button
                         onClick={clearPending}
-                        className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         Cancelar
                       </button>
@@ -238,7 +238,7 @@ export default function UserManagementPanel({
                       <button
                         onClick={() => onReject(p.uid)}
                         title="Recusar acesso"
-                        className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <UserX className="w-3.5 h-3.5" />
                         Recusar
@@ -246,7 +246,7 @@ export default function UserManagementPanel({
                       <button
                         onClick={() => setPendingAction({ uid: p.uid, type: 'delete' })}
                         title="Excluir solicitação"
-                        className="flex items-center text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="flex items-center text-slate-400 dark:text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 p-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -277,7 +277,7 @@ export default function UserManagementPanel({
               >
                 {pendingAction?.uid === p.uid && pendingAction.type === 'revoke' ? (
                   <>
-                    <span className="text-[11px] text-slate-500 pr-1">Revogar acesso?</span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 pr-1">Revogar acesso?</span>
                     <button
                       onClick={() => {
                         onRevoke(p.uid);
@@ -289,18 +289,18 @@ export default function UserManagementPanel({
                     </button>
                     <button
                       onClick={clearPending}
-                      className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                    >
-                      Cancelar
-                    </button>
-                  </>
-                ) : (
+                        className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
                   <>
                     {p.uid !== currentUid && p.role !== 'admin' && !pendingAction && (
                       <button
                         onClick={() => setPendingAction({ uid: p.uid, type: 'revoke' })}
                         title="Revogar acesso"
-                        className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         Revogar
@@ -317,7 +317,7 @@ export default function UserManagementPanel({
         {/* Recusados */}
         {rejected.length > 0 && (
           <section>
-            <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">
+            <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-2">
               <UserX className="w-3.5 h-3.5" />
               Recusados ({rejected.length})
             </h3>
@@ -330,7 +330,7 @@ export default function UserManagementPanel({
                 >
                   {pendingAction?.uid === p.uid && pendingAction.type === 'delete' ? (
                     <>
-                      <span className="text-[11px] text-slate-500 pr-1">Excluir usuário?</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 pr-1">Excluir usuário?</span>
                       <button
                         onClick={() => {
                           onDelete(p.uid);
@@ -342,7 +342,7 @@ export default function UserManagementPanel({
                       </button>
                       <button
                         onClick={clearPending}
-                        className="text-xs font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         Cancelar
                       </button>
@@ -352,7 +352,7 @@ export default function UserManagementPanel({
                       <button
                         onClick={() => onApprove(p.uid)}
                         title="Aprovar mesmo assim"
-                        className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <UserCheck className="w-3.5 h-3.5" />
                         Aprovar
@@ -360,7 +360,7 @@ export default function UserManagementPanel({
                       <button
                         onClick={() => setPendingAction({ uid: p.uid, type: 'delete' })}
                         title="Excluir usuário"
-                        className="flex items-center text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="flex items-center text-slate-400 dark:text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 p-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

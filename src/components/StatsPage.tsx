@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, useEffect, type ReactNode } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -22,13 +22,13 @@ const PIE_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#0ea5e9', '#a85
 
 function SummaryCard({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 flex items-center gap-3">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xs p-4 flex items-center gap-3">
       <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-xl font-bold text-slate-800 leading-tight truncate">{value}</p>
-        <p className="text-[11px] text-slate-400 font-medium truncate">{label}</p>
+        <p className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight truncate">{value}</p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate">{label}</p>
       </div>
     </div>
   );
@@ -36,22 +36,35 @@ function SummaryCard({ icon, label, value }: { icon: ReactNode; label: string; v
 
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 sm:p-5">
-      <h3 className="text-sm font-bold text-slate-700 mb-4">{title}</h3>
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xs p-4 sm:p-5">
+      <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{title}</h3>
       {children}
     </div>
   );
 }
 
-const tooltipStyle = {
+const getTooltipStyle = (dark: boolean) => ({
   fontSize: '12px',
   borderRadius: '10px',
-  border: '1px solid #e2e8f0',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-};
+  border: `1px solid ${dark ? '#475569' : '#e2e8f0'}`,
+  boxShadow: `0 4px 12px ${dark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.08)'}`,
+  backgroundColor: dark ? '#1e293b' : '#ffffff',
+  color: dark ? '#e2e8f0' : '#1e293b',
+});
 
 export default function StatsPage({ reports }: StatsPageProps) {
   const [dateFilter, setDateFilter] = useState<DateFilterState>(defaultDateFilter);
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => setDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const filteredReports = useMemo(() => applyDateFilter(reports, dateFilter), [reports, dateFilter]);
 
@@ -106,14 +119,14 @@ export default function StatsPage({ reports }: StatsPageProps) {
   }, [filteredReports]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 flex flex-col h-full overflow-hidden">
-      <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 flex-wrap">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-6 flex flex-col h-full overflow-hidden">
+      <div className="flex items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-700 flex-wrap">
         <div>
-          <h2 className="text-lg font-bold font-sans tracking-tight text-slate-800 flex items-center gap-2">
+          <h2 className="text-lg font-bold font-sans tracking-tight text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-indigo-600" />
             Estatísticas
           </h2>
-          <p className="text-xs text-slate-400">Visão geral dos relatórios cadastrados, com gráficos.</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">Visão geral dos relatórios cadastrados, com gráficos.</p>
         </div>
         <div>
           <DateFilterPanel filter={dateFilter} onChange={setDateFilter} />
@@ -121,9 +134,9 @@ export default function StatsPage({ reports }: StatsPageProps) {
       </div>
 
       {filteredReports.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 gap-2">
+        <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 gap-2">
           <BarChart3 className="w-10 h-10" />
-          <p className="text-sm font-semibold text-slate-500">Nenhum relatório no período selecionado</p>
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Nenhum relatório no período selecionado</p>
           <p className="text-xs max-w-xs">Ajuste o filtro de período acima, ou cadastre relatórios para ver as estatísticas.</p>
         </div>
       ) : (
@@ -141,10 +154,10 @@ export default function StatsPage({ reports }: StatsPageProps) {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.byMonth} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={{ stroke: '#e2e8f0' }} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f8fafc' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={dark ? '#334155' : '#f1f5f9'} vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: dark ? '#94a3b8' : '#64748b' }} axisLine={{ stroke: dark ? '#475569' : '#e2e8f0' }} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: dark ? '#94a3b8' : '#64748b' }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={getTooltipStyle(dark)} cursor={{ fill: dark ? '#1e293b' : '#f8fafc' }} />
                   <Bar dataKey="count" name="Relatórios" fill="#4f46e5" radius={[6, 6, 0, 0]} maxBarSize={40} />
                 </BarChart>
               </ResponsiveContainer>
@@ -171,7 +184,7 @@ export default function StatsPage({ reports }: StatsPageProps) {
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip contentStyle={getTooltipStyle(dark)} />
                     <Legend
                       layout="vertical"
                       align="right"
@@ -188,17 +201,17 @@ export default function StatsPage({ reports }: StatsPageProps) {
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data.byComando} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={dark ? '#334155' : '#f1f5f9'} horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: dark ? '#94a3b8' : '#64748b' }} axisLine={false} tickLine={false} />
                     <YAxis
                       type="category"
                       dataKey="name"
                       width={90}
-                      tick={{ fontSize: 11, fill: '#64748b' }}
+                      tick={{ fontSize: 11, fill: dark ? '#94a3b8' : '#64748b' }}
                       axisLine={false}
                       tickLine={false}
                     />
-                    <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f8fafc' }} />
+                    <Tooltip contentStyle={getTooltipStyle(dark)} cursor={{ fill: dark ? '#1e293b' : '#f8fafc' }} />
                     <Bar dataKey="count" name="Relatórios" fill="#10b981" radius={[0, 6, 6, 0]} maxBarSize={18} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -211,17 +224,17 @@ export default function StatsPage({ reports }: StatsPageProps) {
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.byResponsavel} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={110}
-                    tick={{ fontSize: 11, fill: '#64748b' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f8fafc' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={dark ? '#334155' : '#f1f5f9'} horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: dark ? '#94a3b8' : '#64748b' }} axisLine={false} tickLine={false} />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={110}
+                      tick={{ fontSize: 11, fill: dark ? '#94a3b8' : '#64748b' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip contentStyle={getTooltipStyle(dark)} cursor={{ fill: dark ? '#1e293b' : '#f8fafc' }} />
                   <Bar dataKey="count" name="Relatórios" fill="#f59e0b" radius={[0, 6, 6, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>

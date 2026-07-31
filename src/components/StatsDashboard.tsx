@@ -50,82 +50,82 @@ export default function StatsDashboard({ reports, totalUnfiltered, isFiltered }:
   }, [reports]);
 
   return (
-    <div className="col-span-12 bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+    <div className="col-span-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xs overflow-hidden">
       {/* Header / Toggle */}
       <button
         id="btn-toggle-dashboard"
         onClick={() => setIsOpen((v) => !v)}
-        className="w-full flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50/80 transition-colors"
+        className="w-full flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-700/80 transition-colors"
       >
         <div className="flex items-center gap-2.5">
           <div className="bg-indigo-50 p-1.5 rounded-lg text-indigo-600">
             <BarChart3 className="w-4 h-4" />
           </div>
           <div className="text-left">
-            <p className="text-xs font-bold text-slate-800">
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-100">
               Estatísticas {isFiltered ? '(período filtrado)' : ''}
             </p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">
               {reports.length} {reports.length === 1 ? 'relatório' : 'relatórios'}
               {isFiltered ? ` de ${totalUnfiltered} no total` : ''}
             </p>
           </div>
         </div>
         {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-slate-400" />
+          <ChevronUp className="w-4 h-4 text-slate-400 dark:text-slate-500" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-slate-400" />
+          <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500" />
         )}
       </button>
 
       {isOpen && (
-        <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-5">
+        <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-700 space-y-5">
           {reports.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-4">
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">
               Nenhum relatório no período selecionado para gerar estatísticas.
             </p>
           ) : (
             <>
               {/* Top summary cards */}
               <div className="grid grid-cols-3 gap-3 pt-3">
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                  <div className="flex items-center gap-1.5 text-slate-400 mb-1">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1">
                     <FileText className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-semibold uppercase tracking-wider">Total</span>
                   </div>
-                  <p className="text-xl font-bold text-slate-800">{reports.length}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{reports.length}</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                  <div className="flex items-center gap-1.5 text-slate-400 mb-1">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1">
                     <CalendarDays className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-semibold uppercase tracking-wider">Meses ativos</span>
                   </div>
-                  <p className="text-xl font-bold text-slate-800">{stats.byMonth.length}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{stats.byMonth.length}</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                  <div className="flex items-center gap-1.5 text-slate-400 mb-1">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+                  <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1">
                     <Users className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-semibold uppercase tracking-wider">Responsáveis</span>
                   </div>
-                  <p className="text-xl font-bold text-slate-800">{stats.byResponsavel.length}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{stats.byResponsavel.length}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Por mês */}
                 <div className="space-y-2">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Eventos por mês</p>
+                  <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Eventos por mês</p>
                   <div className="space-y-1.5">
                     {stats.byMonth.map((m) => (
                       <div key={m.key} className="flex items-center gap-2 text-xs">
-                        <span className="w-10 text-slate-500 font-medium shrink-0">{m.label}</span>
-                        <div className="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <span className="w-10 text-slate-500 dark:text-slate-400 font-medium shrink-0">{m.label}</span>
+                        <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
                           <div
-                            className="bg-indigo-500 h-full rounded-full transition-all"
+                            className="bg-indigo-500 dark:bg-indigo-400 h-full rounded-full transition-all"
                             style={{ width: `${stats.maxMonthCount ? (m.count / stats.maxMonthCount) * 100 : 0}%` }}
                           />
                         </div>
-                        <span className="w-6 text-right text-slate-600 font-semibold shrink-0">{m.count}</span>
+                        <span className="w-6 text-right text-slate-600 dark:text-slate-300 font-semibold shrink-0">{m.count}</span>
                       </div>
                     ))}
                   </div>
@@ -133,20 +133,20 @@ export default function StatsDashboard({ reports, totalUnfiltered, isFiltered }:
 
                 {/* Por responsável */}
                 <div className="space-y-2">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Por responsável (top 6)</p>
+                  <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Por responsável (top 6)</p>
                   <div className="space-y-1.5">
                     {stats.byResponsavel.map(([name, count]) => (
                       <div key={name} className="flex items-center gap-2 text-xs">
-                        <span className="w-24 text-slate-500 font-medium truncate shrink-0" title={name}>
+                        <span className="w-24 text-slate-500 dark:text-slate-400 font-medium truncate shrink-0" title={name}>
                           {name}
                         </span>
-                        <div className="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
                           <div
-                            className="bg-emerald-500 h-full rounded-full transition-all"
+                            className="bg-emerald-500 dark:bg-emerald-400 h-full rounded-full transition-all"
                             style={{ width: `${stats.maxResponsavelCount ? (count / stats.maxResponsavelCount) * 100 : 0}%` }}
                           />
                         </div>
-                        <span className="w-6 text-right text-slate-600 font-semibold shrink-0">{count}</span>
+                        <span className="w-6 text-right text-slate-600 dark:text-slate-300 font-semibold shrink-0">{count}</span>
                       </div>
                     ))}
                   </div>

@@ -27,7 +27,7 @@ export default function ReportModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-xs"
           />
 
           {/* Modal Container */}
@@ -37,12 +37,12 @@ export default function ReportModal({
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.15 }}
             id="report-detail-modal"
-            className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl border border-slate-100"
+            className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700"
           >
             {/* Header / Accent top bar */}
-            <div className="bg-slate-800 px-6 py-5 text-white flex items-center justify-between">
+            <div className="bg-slate-800 dark:bg-slate-950 px-6 py-5 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-700 dark:border-slate-600 bg-slate-900 flex items-center justify-center shrink-0">
                   <img 
                     src={logoImg} 
                     alt="Insanos MC Logo" 
@@ -62,7 +62,7 @@ export default function ReportModal({
               <button
                 id="close-modal-button"
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 transition-all cursor-pointer"
+                className="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 hover:text-white hover:bg-slate-700 dark:hover:bg-slate-600 transition-all cursor-pointer"
                 title="Fechar"
               >
                 <X className="w-5 h-5" />
@@ -70,10 +70,10 @@ export default function ReportModal({
             </div>
 
             {/* Modal Body */}
-            <div className="px-6 py-6 max-h-[70vh] overflow-y-auto space-y-6 scrollbar-thin scrollbar-thumb-slate-200">
+            <div className="px-6 py-6 max-h-[70vh] overflow-y-auto space-y-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
               {/* Event Photo */}
               {report.fotoUrl && (
-                <div className="rounded-xl overflow-hidden border border-slate-100">
+                <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700">
                   <img
                     src={report.fotoUrl}
                     alt={`Foto do evento: ${report.evento}`}
@@ -83,73 +83,73 @@ export default function ReportModal({
               )}
 
               {/* Info Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                  <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-lg text-indigo-600">
                     <Hash className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Número do Relatório</p>
+                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Número do Relatório</p>
                     <p className="text-sm font-medium">{report.numeroRelatorio || '—'}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                  <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-lg text-indigo-600">
                     <Calendar className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Data</p>
+                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Data</p>
                     <p className="text-sm font-medium">{formatDate(report.data)}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                  <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-lg text-indigo-600">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Hora</p>
+                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Hora</p>
                     <p className="text-sm font-medium">{report.hora}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                  <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-lg text-indigo-600">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Regional</p>
+                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Regional</p>
                     <p className="text-sm font-medium">{report.regional}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                  <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-lg text-indigo-600">
                     <Shield className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Comando</p>
+                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Comando</p>
                     <p className="text-sm font-medium">{report.comando}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                  <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-lg text-indigo-600">
                     <User className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Responsável</p>
+                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Responsável</p>
                     <p className="text-sm font-medium">{report.responsavel}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                  <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-lg text-indigo-600">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Conferido por</p>
+                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Conferido por</p>
                     <p className="text-sm font-medium">{report.conferidoPor || <span className="text-slate-400 italic">Não informado</span>}</p>
                   </div>
                 </div>
@@ -157,29 +157,29 @@ export default function ReportModal({
 
               {/* Participants Section */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
-                  <Users className="w-4 h-4 text-slate-500" />
+                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold text-sm">
+                  <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   <h4>Participantes</h4>
                 </div>
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">
+                <div className="bg-slate-50 dark:bg-slate-900 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                   {report.participantes || <span className="text-slate-400 italic">Nenhum participante informado.</span>}
                 </div>
               </div>
 
               {/* Detailed Description Section */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
-                  <FileText className="w-4 h-4 text-slate-500" />
+                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold text-sm">
+                  <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   <h4>Descrição Detalhada</h4>
                 </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">
+                <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                   {report.descricao || <span className="text-slate-400 italic">Nenhuma descrição detalhada informada.</span>}
                 </div>
               </div>
             </div>
 
              {/* Modal Footer */}
-            <div className="bg-slate-50 px-6 py-4 flex flex-col sm:flex-row sm:justify-end gap-2 border-t border-slate-100">
+            <div className="bg-slate-50 dark:bg-slate-900 px-6 py-4 flex flex-col sm:flex-row sm:justify-end gap-2 border-t border-slate-100 dark:border-slate-700">
               <button
                 id="modal-pdf-button"
                 onClick={() => import('../utils/pdfGenerator').then(({ generateSingleReportPDF }) => generateSingleReportPDF(report))}
@@ -191,7 +191,7 @@ export default function ReportModal({
               <button
                 id="modal-close-footer-button"
                 onClick={onClose}
-                className="w-full sm:w-auto bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all cursor-pointer text-center"
+                className="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-600 active:bg-slate-200 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all cursor-pointer text-center"
               >
                 Fechar
               </button>

@@ -17,6 +17,8 @@ import {
 import type { EventReport, PhotoChange, UserProfile } from './types';
 import { validateEventReport } from './utils/validateReport';
 import { translateFirebaseError } from './utils/firebaseErrors';
+import { ThemeProvider } from './context/ThemeContext';
+import { ThemeToggle } from './components/ThemeToggle';
 import ReportForm from './components/ReportForm';
 import ReportList from './components/ReportList';
 import ReportModal from './components/ReportModal';
@@ -386,7 +388,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans relative">
+    <ThemeProvider>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans relative transition-colors">
 
       {/* Marca d'água de fundo: brasão Insanos MC, fixo e semi-transparente,
           atrás de todo o conteúdo, sem interferir nos cliques. */}
@@ -397,12 +400,12 @@ export default function App() {
         <img
           src={watermarkImg}
           alt=""
-          className="h-[65vmin] w-auto max-w-none opacity-[0.06] select-none"
+          className="h-[65vmin] w-auto max-w-none opacity-[0.06] dark:opacity-[0.03] select-none"
         />
       </div>
 
       {/* Top Header Navigation */}
-      <header className="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+      <header className="bg-slate-900 dark:bg-slate-950 text-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:h-16 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center shrink-0">
@@ -424,6 +427,7 @@ export default function App() {
 
           {/* Auth & Backup Action buttons */}
           <div className="flex items-center gap-2 shrink-0">
+            <ThemeToggle />
             {user ? (
               <span className="hidden lg:flex items-center gap-1.5 text-[11px] bg-emerald-950/40 text-emerald-300 py-1.5 px-3 rounded-lg border border-emerald-500/30">
                 {isSyncing ? (
@@ -456,8 +460,8 @@ export default function App() {
         {alertInfo && (
           <div className={`fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 p-4 rounded-xl shadow-2xl border flex items-center gap-3 sm:max-w-md animate-bounce ${
             alertInfo.type === 'success' 
-              ? 'bg-emerald-50 border-emerald-100 text-emerald-800' 
-              : 'bg-rose-50 border-rose-100 text-rose-800'
+              ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-100 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200' 
+              : 'bg-rose-50 dark:bg-rose-900 border-rose-100 dark:border-rose-700 text-rose-800 dark:text-rose-200'
           }`}>
             {alertInfo.type === 'success' ? (
               <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
@@ -477,12 +481,12 @@ export default function App() {
         ) : !user ? (
           // Acesso restrito: só mostra conteúdo depois de logar
           <div className="w-full flex flex-col items-center justify-center gap-4 py-24 text-center">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
               <img src={logoImg} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Acesso restrito</h2>
-              <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Acesso restrito</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">
                 Entre com sua conta Google para ver, cadastrar e gerenciar os relatórios.
               </p>
             </div>
@@ -497,26 +501,26 @@ export default function App() {
           </div>
         ) : profileLoading || !userProfile ? (
           // Confirmando o status de aprovação do usuário
-          <div className="w-full flex flex-col items-center justify-center gap-3 py-24 text-slate-400">
+          <div className="w-full flex flex-col items-center justify-center gap-3 py-24 text-slate-400 dark:text-slate-500">
             <RefreshCw className="w-7 h-7 animate-spin" />
             <p className="text-sm">Verificando permissão de acesso...</p>
           </div>
         ) : !isAdmin && userProfile.status === 'pending' ? (
           // Login feito, mas aguardando aprovação de um administrador
           <div className="w-full flex flex-col items-center justify-center gap-4 py-24 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center">
-              <Clock className="w-7 h-7 text-amber-500" />
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-900 border border-amber-100 dark:border-amber-700 flex items-center justify-center">
+              <Clock className="w-7 h-7 text-amber-500 dark:text-amber-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Aguardando aprovação</h2>
-              <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Aguardando aprovação</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">
                 Seu login foi feito com sucesso, mas o acesso ao sistema precisa ser liberado
                 por um administrador. Assim que for aprovado, você poderá entrar normalmente.
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-sm font-semibold py-2.5 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer"
+              className="flex items-center gap-2 text-sm font-semibold py-2.5 px-5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>Sair</span>
@@ -525,19 +529,19 @@ export default function App() {
         ) : !isAdmin && userProfile.status === 'rejected' ? (
           // Acesso recusado por um administrador
           <div className="w-full flex flex-col items-center justify-center gap-4 py-24 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
-              <ShieldAlert className="w-7 h-7 text-red-500" />
+            <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-900 border border-red-100 dark:border-red-700 flex items-center justify-center">
+              <ShieldAlert className="w-7 h-7 text-red-500 dark:text-red-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Acesso não autorizado</h2>
-              <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Acesso não autorizado</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">
                 Um administrador recusou o acesso dessa conta ao sistema. Se você acredita que
                 isso é um engano, entre em contato com o Sgt de Armas.
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-sm font-semibold py-2.5 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all cursor-pointer"
+              className="flex items-center gap-2 text-sm font-semibold py-2.5 px-5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>Sair</span>
@@ -547,14 +551,14 @@ export default function App() {
           <>
             {/* Left Sidebar: Dashboard Navigation */}
             <aside className="shrink-0 md:w-56">
-              <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 md:p-3 md:sticky md:top-24">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-2 md:p-3 md:sticky md:top-24">
                 <nav className="flex flex-wrap md:flex-col gap-1.5 md:gap-2">
                   <button
                     onClick={() => setActiveTab('form')}
                     className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                       activeTab === 'form'
                         ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
                     <FileText className="w-4 h-4 shrink-0" />
@@ -565,7 +569,7 @@ export default function App() {
                     className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                       activeTab === 'search'
                         ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
                     <Search className="w-4 h-4 shrink-0" />
@@ -576,14 +580,14 @@ export default function App() {
                     className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                       activeTab === 'reports'
                         ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
                     <ClipboardList className="w-4 h-4 shrink-0" />
                     <span>Gestão de Relatórios</span>
                     <span
                       className={`hidden md:inline-flex ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 ${
-                        activeTab === 'reports' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                        activeTab === 'reports' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                       }`}
                     >
                       {reports.length}
@@ -595,7 +599,7 @@ export default function App() {
                     className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                       activeTab === 'stats'
                         ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
                     <BarChart3 className="w-4 h-4 shrink-0" />
@@ -608,7 +612,7 @@ export default function App() {
                       className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
                         activeTab === 'users'
                           ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
-                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
                       }`}
                     >
                       <Users className="w-4 h-4 shrink-0" />
@@ -616,7 +620,7 @@ export default function App() {
                       {pendingUsersCount > 0 && (
                         <span
                           className={`hidden md:flex ml-auto text-[11px] font-bold rounded-full min-w-[1.5rem] h-6 items-center justify-center px-1.5 ${
-                            activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'
+                            activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-400'
                           }`}
                         >
                           {pendingUsersCount}
@@ -628,7 +632,7 @@ export default function App() {
 
                 {/* User info: name shown below the nav instead of the top bar */}
                 {user && (
-                  <div className="flex items-center gap-2 px-1.5 pt-3 mt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2 px-1.5 pt-3 mt-2 border-t border-slate-100 dark:border-slate-700">
                     {user.photoURL ? (
                       <img
                         src={user.photoURL}
@@ -642,15 +646,15 @@ export default function App() {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-slate-700 truncate">
+                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
                         {user.displayName || 'Usuário'}
                       </p>
-                      <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{user.email}</p>
                     </div>
                     <button
                       id="btn-google-signout"
                       onClick={handleLogout}
-                      className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
+                      className="text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors cursor-pointer shrink-0"
                       title="Sair da Conta Google"
                     >
                       <LogOut className="w-4 h-4" />
@@ -678,7 +682,7 @@ export default function App() {
               ) : activeTab === 'stats' ? (
                 <Suspense
                   fallback={
-                    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 h-full flex flex-col items-center justify-center gap-3 text-slate-400">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col items-center justify-center gap-3 text-slate-400 dark:text-slate-500">
                       <RefreshCw className="w-6 h-6 animate-spin" />
                       <p className="text-sm">Carregando estatísticas...</p>
                     </div>
@@ -726,9 +730,10 @@ export default function App() {
       />
 
       {/* Flat simple footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-4 text-center text-slate-500 text-[11px] font-mono">
+      <footer className="bg-slate-900 dark:bg-slate-950 border-t border-slate-800 dark:border-slate-700 py-4 text-center text-slate-500 dark:text-slate-400 text-[11px] font-mono">
         Relatório Sgt Armas CMD XXIX - IMC © 2026 • Sid Sgt Armas
       </footer>
     </div>
+    </ThemeProvider>
   );
 }
