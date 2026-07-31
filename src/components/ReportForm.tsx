@@ -185,7 +185,7 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
             <img 
               src={logoImg} 
               alt="Insanos MC Logo" 
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-contain" 
               referrerPolicy="no-referrer"
             />
           </div>

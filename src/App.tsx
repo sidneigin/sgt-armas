@@ -412,7 +412,7 @@ export default function App() {
               <img 
                 src={logoImg} 
                 alt="Insanos MC Logo" 
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-contain" 
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -482,7 +482,7 @@ export default function App() {
           // Acesso restrito: só mostra conteúdo depois de logar
           <div className="w-full flex flex-col items-center justify-center gap-4 py-24 text-center">
             <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
-              <img src={logoImg} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              <img src={logoImg} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Acesso restrito</h2>
