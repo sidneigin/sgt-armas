@@ -4,6 +4,16 @@ import { EventReport, PhotoChange } from '../types';
 import { compressImageFile } from '../utils/imageCompress';
 import logoImg from '../assets/images/sgt_armas_logo_ui.jpg';
 
+const REGIONAL_OPTIONS = [
+  'Regional Norte do Paraná',
+  'Regional Vale do Ivaí',
+  'Regional Vale do Café',
+  'Regional Maringá',
+  'Regional Londrina',
+];
+
+const COMANDO_FIXO = 'XXIX';
+
 interface ReportFormProps {
   editingReport: EventReport | null;
   onSave: (reportData: Omit<EventReport, 'id' | 'createdAt' | 'fotoUrl'>, photoChange: PhotoChange) => void;
@@ -16,7 +26,7 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
   const [data, setData] = useState('');
   const [hora, setHora] = useState('');
   const [regional, setRegional] = useState('');
-  const [comando, setComando] = useState('');
+  const [comando, setComando] = useState(COMANDO_FIXO);
   const [participantes, setParticipantes] = useState('');
   const [descricao, setDescricao] = useState('');
   const [responsavel, setResponsavel] = useState('');
@@ -49,7 +59,7 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
       setData(editingReport.data);
       setHora(editingReport.hora);
       setRegional(editingReport.regional);
-      setComando(editingReport.comando || '');
+      setComando(COMANDO_FIXO); // Comando é sempre fixo (XXIX), não vem do relatório antigo
       setParticipantes(editingReport.participantes);
       setDescricao(editingReport.descricao);
       setResponsavel(editingReport.responsavel);
@@ -70,7 +80,7 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
     setData('');
     setHora('');
     setRegional('');
-    setComando('');
+    setComando(COMANDO_FIXO);
     setParticipantes('');
     setDescricao('');
     setResponsavel('');
@@ -309,17 +319,20 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Regional *</label>
             <div className="relative">
-              <input
-                type="text"
+              <select
                 id="input-regional"
                 value={regional}
                 onChange={(e) => setRegional(e.target.value)}
-                placeholder="Ex: 1ª Regional"
-                className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border ${
+                className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border appearance-none ${
                   errors.regional ? 'border-rose-400 bg-rose-50/10 dark:bg-rose-900/30 focus:ring-rose-200 dark:focus:ring-rose-700' : 'border-slate-200 dark:border-slate-600 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-800 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100'
                 } outline-none focus:ring-3 transition-all`}
-              />
-              <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3" />
+              >
+                <option value="" disabled>Selecione a regional</option>
+                {REGIONAL_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3 pointer-events-none" />
             </div>
             {errors.regional && (
               <p className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
@@ -328,7 +341,7 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
             )}
           </div>
 
-          {/* Comando */}
+          {/* Comando (fixo, não editável) */}
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Comando *</label>
             <div className="relative">
@@ -336,19 +349,12 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
                 type="text"
                 id="input-comando"
                 value={comando}
-                onChange={(e) => setComando(e.target.value)}
-                placeholder="Ex: CMD XXIX"
-                className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border ${
-                  errors.comando ? 'border-rose-400 bg-rose-50/10 dark:bg-rose-900/30 focus:ring-rose-200 dark:focus:ring-rose-700' : 'border-slate-200 dark:border-slate-600 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-800 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100'
-                } outline-none focus:ring-3 transition-all`}
+                readOnly
+                disabled
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 outline-none cursor-not-allowed"
               />
               <Shield className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3" />
             </div>
-            {errors.comando && (
-              <p className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" /> {errors.comando}
-              </p>
-            )}
           </div>
         </div>
 
