@@ -9,7 +9,10 @@ Sistema web para cadastro, consulta e exportação de relatórios de eventos, co
 - **Dashboard com barra lateral**: navegação por abas — **Preencher Relatório**, **Gestão de Relatórios** e (só para administradores) **Gestão de Usuários** — cada uma ocupando a tela toda
 - **Gestão de Usuários** (admins): aprova, recusa ou revoga o acesso de qualquer conta Google ao sistema. Administradores são fixos por e-mail (`sidneibogas@gmail.com`, `claudiosantinao078@gmail.com`, `imc.sidnei@gmail.com`)
 - **Acesso compartilhado aos relatórios**: qualquer pessoa aprovada pode criar, ver, editar e excluir todos os relatórios
-- **Número do relatório**: campo de identificação numérica, presente no formulário, na listagem, no modal de detalhes e nos PDFs
+- **Número do relatório**: campo de identificação numérica no formato `NNN/MM` (ex: `001/08`), presente no formulário, na listagem, no modal de detalhes e nos PDFs. Os 2 últimos dígitos indicam o mês do relatório
+- **Listagem agrupada por mês e ano**: os relatórios são organizados em grupos (ex: "Agosto de 2026", "Julho de 2026"), do mais recente para o mais antigo. O mês vem dos 2 últimos dígitos do número do relatório e o ano vem da data do evento — assim a virada do ano não mistura, por exemplo, "Janeiro de 2026" com "Janeiro de 2027"
+- **Comando fixo**: o campo Comando do formulário é sempre `XXIX` e não pode ser alterado
+- **Regional em lista fixa**: o campo Regional é selecionado a partir de uma lista pré-definida (Regional Norte do Paraná, Regional Vale do Ivaí, Regional Vale do Café, Regional Maringá, Regional Londrina), em vez de texto livre
 - **Sincronização em tempo real** via Firebase Firestore
 - **Foto do evento** anexada ao relatório (comprimida automaticamente no navegador e salva direto no Firestore — sem custo de armazenamento extra)
 - **Exportação em PDF**:
