@@ -54,7 +54,7 @@ export function groupReportsByMonth(reports: EventReport[]): ReportMonthGroup[] 
   entries.sort((a, b) => {
     if (a[0] === null) return 1;
     if (b[0] === null) return -1;
-    return a[0] - b[0];
+    return b[0] - a[0]; // decrescente: mês mais recente primeiro (ex: Agosto, Julho, Junho...)
   });
 
   return entries.map(([month, groupReports]) => ({
