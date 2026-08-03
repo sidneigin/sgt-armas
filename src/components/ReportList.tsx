@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Search, Eye, Edit3, Trash2, FileDown, Layers, Calendar, MapPin, User, AlertTriangle, Shield } from 'lucide-react';
 import { EventReport } from '../types';
 import { formatDate } from '../utils/formatDate';
 import { applyDateFilter, defaultDateFilter, DateFilterState } from '../utils/dateFilters';
+import { groupReportsByMonth } from '../utils/reportGrouping';
 import DateFilterPanel from './DateFilterPanel';
 import StatsDashboard from './StatsDashboard';
 
@@ -65,6 +66,10 @@ export default function ReportList({
   });
 
   const isDateFiltered = dateFilter.mode !== 'all';
+
+  // Agrupa os relatórios filtrados por mês, usando os 2 últimos dígitos
+  // do número do relatório (ex: "001/07" -> julho)
+  const monthGroups = groupReportsByMonth(filteredReports);
 
   const selectedReport = reports.find((r) => r.id === selectedReportId);
 
@@ -162,7 +167,13 @@ export default function ReportList({
           <>
             {/* Versão em cards para celular (a tabela fica difícil de usar em telas pequenas) */}
             <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700">
-              {filteredReports.map((report) => {
+              {monthGroups.map((group) => (
+                <div key={`mobile-group-${group.month ?? 'sem-mes'}`}>
+                  <div className="sticky top-0 z-5 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-y border-slate-200 dark:border-slate-700">
+                    {group.label} <span className="font-normal normal-case text-slate-400 dark:text-slate-500">({group.reports.length})</span>
+                  </div>
+                  <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                  {group.reports.map((report) => {
                 const isSelected = report.id === selectedReportId;
                 return (
                   <div
@@ -229,6 +240,9 @@ export default function ReportList({
                   </div>
                 );
               })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Tabela para telas médias/grandes */}
@@ -247,7 +261,17 @@ export default function ReportList({
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
-                {filteredReports.map((report) => {
+                {monthGroups.map((group) => (
+                  <React.Fragment key={`desktop-group-${group.month ?? 'sem-mes'}`}>
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="sticky top-[41px] z-[5] bg-slate-100 dark:bg-slate-900 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-y border-slate-200 dark:border-slate-700"
+                      >
+                        {group.label} <span className="font-normal normal-case text-slate-400 dark:text-slate-500">({group.reports.length})</span>
+                      </td>
+                    </tr>
+                    {group.reports.map((report) => {
                   const isSelected = report.id === selectedReportId;
                   return (
                     <tr
@@ -333,7 +357,9 @@ export default function ReportList({
                       </td>
                     </tr>
                   );
-                })}
+                    })}
+                  </React.Fragment>
+                ))}
               </tbody>
             </table>
             </div>
