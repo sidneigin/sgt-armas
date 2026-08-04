@@ -364,11 +364,13 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
 
           {displayedPhotoUrl ? (
             <div className="relative w-full max-w-[220px]">
-              <img
-                src={displayedPhotoUrl}
-                alt="Prévia da foto do evento"
-                className="w-full h-36 object-cover rounded-xl border border-slate-200 dark:border-slate-600"
-              />
+              <div className="w-full h-36 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
+                <img
+                  src={displayedPhotoUrl}
+                  alt="Prévia da foto do evento"
+                  className="w-full h-full object-contain"
+                />
+              </div>
               <button
                 type="button"
                 id="btn-remove-photo"
