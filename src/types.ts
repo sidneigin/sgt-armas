@@ -26,6 +26,19 @@ export type PhotoChange =
   | { type: 'removed' }
   | { type: 'new'; blob: Blob; previewDataUrl: string };
 
+// "Manuais Insanos": manuais em PDF hospedados externamente (Google Drive,
+// Dropbox etc.) que os administradores disponibilizam para os usuários lerem.
+// Guardamos só o link, não o arquivo — sem limite de tamanho e sem custo de
+// armazenamento no Firestore.
+export interface Manual {
+  id: string;
+  titulo: string;
+  descricao?: string;
+  url: string; // link externo (Google Drive, Dropbox etc.) para o PDF
+  createdAt: number;
+  criadoPor: string; // e-mail do admin que cadastrou
+}
+
 // Perfil de acesso do usuário: controla quem pode usar o sistema.
 // Administradores aprovam ou recusam o acesso de novos usuários.
 export interface UserProfile {
