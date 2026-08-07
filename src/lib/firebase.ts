@@ -22,7 +22,7 @@ import {
   limit,
   updateDoc
 } from 'firebase/firestore';
-import { EventReport, UserProfile } from '../types';
+import { EventReport, UserProfile, Manual } from '../types';
 import firebaseConfig from '../../firebase-config.json';
 
 // Use environment variables if set (e.g. on Vercel), fallback to local firebase-config.json
@@ -154,6 +154,62 @@ export const saveReportToFirestore = async (report: EventReport, userId: string)
 export const deleteReportFromFirestore = async (reportId: string) => {
   const reportDocRef = doc(db, 'reports', reportId);
   await deleteDoc(reportDocRef);
+};
+
+// ===== Manuais Insanos (PDFs) =====
+// Guardamos só o link do PDF (hospedado no Google Drive/Dropbox/etc.), não o
+// arquivo em si — assim não há limite de tamanho nem custo de armazenamento.
+
+export const subscribeToManuals = (
+  onUpdate: (manuals: Manual[]) => void,
+  onError?: (error: any) => void
+) => {
+  const q = query(collection(db, 'manuals'));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const manuals: Manual[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        manuals.push({
+          id: doc.id,
+          titulo: data.titulo,
+          descricao: data.descricao,
+          url: data.url,
+          createdAt: data.createdAt,
+          criadoPor: data.criadoPor,
+        } as Manual);
+      });
+
+      // Mais recentes primeiro
+      manuals.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      onUpdate(manuals);
+    },
+    (error) => {
+      console.error('Erro na sincronização de manuais:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+// Add or update a manual in Firestore.
+// deleteField() é necessário para descricao quando ausente, pelo mesmo motivo
+// do fotoUrl em saveReportToFirestore: merge:true não apaga um campo omitido,
+// e o Firestore rejeita `undefined` como valor de campo.
+export const saveManualToFirestore = async (manual: Manual) => {
+  const manualDocRef = doc(db, 'manuals', manual.id);
+  await setDoc(manualDocRef, {
+    ...manual,
+    descricao: manual.descricao ?? deleteField(),
+  }, { merge: true });
+};
+
+// Delete a manual from Firestore
+export const deleteManualFromFirestore = async (manualId: string) => {
+  const manualDocRef = doc(db, 'manuals', manualId);
+  await deleteDoc(manualDocRef);
 };
 
 // Sync multiple local reports to Firestore on first sign-in.
