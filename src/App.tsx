@@ -6,6 +6,7 @@ import {
   Search,
   BarChart3,
   Users,
+  BookOpen,
   Clock,
   ShieldAlert,
   CheckCircle, 
@@ -14,7 +15,7 @@ import {
   LogOut, 
   RefreshCw
 } from 'lucide-react';
-import type { EventReport, PhotoChange, UserProfile } from './types';
+import type { EventReport, PhotoChange, UserProfile, Manual } from './types';
 import { validateEventReport } from './utils/validateReport';
 import { translateFirebaseError } from './utils/firebaseErrors';
 import { ThemeProvider } from './context/ThemeContext';
@@ -23,6 +24,7 @@ import ReportForm from './components/ReportForm';
 import ReportList from './components/ReportList';
 import ReportModal from './components/ReportModal';
 import UserManagementPanel from './components/UserManagementPanel';
+import ManualsPanel from './components/ManualsPanel';
 import SearchPanel from './components/SearchPanel';
 const StatsPage = lazy(() => import('./components/StatsPage'));
 import { 
@@ -38,7 +40,10 @@ import {
   subscribeToAllUserProfiles,
   setUserApprovalStatus,
   setUserRole,
-  deleteUserProfile
+  deleteUserProfile,
+  subscribeToManuals,
+  saveManualToFirestore,
+  deleteManualFromFirestore
 } from './lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
 import logoImg from './assets/images/sgt_armas_logo_ui.jpg';
@@ -51,7 +56,8 @@ export default function App() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeViewReport, setActiveViewReport] = useState<EventReport | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'stats' | 'users'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'stats' | 'users' | 'manuals'>('form');
+  const [manuals, setManuals] = useState<Manual[]>([]);
 
   // Firebase Auth & Sync States
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -182,6 +188,25 @@ export default function App() {
     return () => unsubscribeReports();
   }, [user, authChecked]);
 
+  // Carrega os manuais (PDFs) em tempo real. Qualquer usuário logado pode
+  // ler; só administradores podem cadastrar/editar/excluir (ver firestore.rules).
+  useEffect(() => {
+    if (!authChecked || !user) {
+      setManuals([]);
+      return;
+    }
+
+    const unsubscribeManuals = subscribeToManuals(
+      (firestoreManuals) => setManuals(firestoreManuals),
+      (error) => {
+        console.error('Erro ao carregar manuais:', error);
+        triggerAlert(`Erro ao carregar manuais: ${translateFirebaseError(error)}`, 'error');
+      }
+    );
+
+    return () => unsubscribeManuals();
+  }, [user, authChecked]);
+
   // Save/trigger alert messages
   const triggerAlert = (message: string, type: 'success' | 'error' = 'success') => {
     setAlertInfo({ message, type });
@@ -293,6 +318,50 @@ export default function App() {
     } catch (error: any) {
       console.error(error);
       triggerAlert(`Erro ao excluir o relatório: ${translateFirebaseError(error)}`, 'error');
+    }
+  };
+
+  // Create, update or delete a "Manual Insano" (só administradores, ver firestore.rules)
+  const handleSaveManual = async (manualData: Omit<Manual, 'id' | 'createdAt' | 'criadoPor'> & { id?: string }) => {
+    if (!user) {
+      triggerAlert('Você precisa estar logado para gerenciar manuais.', 'error');
+      return;
+    }
+    try {
+      if (manualData.id) {
+        // Edição: mantém createdAt/criadoPor originais (merge:true no Firestore preserva o que não for enviado)
+        await saveManualToFirestore({
+          id: manualData.id,
+          titulo: manualData.titulo,
+          descricao: manualData.descricao,
+          url: manualData.url,
+        } as Manual);
+        triggerAlert('Manual atualizado com sucesso!');
+      } else {
+        const newManual: Manual = {
+          id: `manual_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          titulo: manualData.titulo,
+          descricao: manualData.descricao,
+          url: manualData.url,
+          createdAt: Date.now(),
+          criadoPor: user.email || user.displayName || 'Administrador',
+        };
+        await saveManualToFirestore(newManual);
+        triggerAlert('Manual adicionado com sucesso!');
+      }
+    } catch (error: any) {
+      console.error(error);
+      triggerAlert(`Erro ao salvar o manual: ${translateFirebaseError(error)}`, 'error');
+    }
+  };
+
+  const handleDeleteManual = async (manualId: string) => {
+    try {
+      await deleteManualFromFirestore(manualId);
+      triggerAlert('Manual excluído com sucesso!');
+    } catch (error: any) {
+      console.error(error);
+      triggerAlert(`Erro ao excluir o manual: ${translateFirebaseError(error)}`, 'error');
     }
   };
 
@@ -606,6 +675,18 @@ export default function App() {
                     <span>Estatísticas</span>
                   </button>
 
+                  <button
+                    onClick={() => setActiveTab('manuals')}
+                    className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
+                      activeTab === 'manuals'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4 shrink-0" />
+                    <span>Manuais Insanos</span>
+                  </button>
+
                   {isAdmin && (
                     <button
                       onClick={() => setActiveTab('users')}
@@ -700,6 +781,13 @@ export default function App() {
                   onRevoke={handleRevokeUser}
                   onChangeRole={handleChangeUserRole}
                   onDelete={handleDeleteUser}
+                />
+              ) : activeTab === 'manuals' ? (
+                <ManualsPanel
+                  manuals={manuals}
+                  isAdmin={isAdmin}
+                  onSave={handleSaveManual}
+                  onDelete={handleDeleteManual}
                 />
               ) : (
                 <ReportList
