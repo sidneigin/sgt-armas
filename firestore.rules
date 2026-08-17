@@ -59,6 +59,14 @@ service cloud.firestore {
       allow create, update, delete: if request.auth != null && isAdminByRole();
     }
 
+    match /manuals/{manualId} {
+      // Qualquer usuário autenticado pode ler os manuais.
+      allow read: if request.auth != null;
+
+      // Só administradores podem criar, atualizar ou excluir manuais.
+      allow create, update, delete: if request.auth != null && isAdminByRole();
+    }
+
     function isAdminEmail(email) {
       return email in ['sidneibogas@gmail.com', 'claudiosantinao078@gmail.com', 'imc.sidnei@gmail.com'];
     }
