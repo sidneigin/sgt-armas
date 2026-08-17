@@ -4,14 +4,6 @@ import { EventReport, PhotoChange, Regional } from '../types';
 import { compressImageFile } from '../utils/imageCompress';
 import logoImg from '../assets/images/sgt_armas_logo_ui.jpg';
 
-const REGIONAL_OPTIONS = [
-  'Regional Norte do Paraná',
-  'Regional Vale do Ivaí',
-  'Regional Vale do Café',
-  'Regional Maringá',
-  'Regional Londrina',
-];
-
 const COMANDO_FIXO = 'XXIX';
 
 interface ReportFormProps {

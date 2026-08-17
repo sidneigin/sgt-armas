@@ -47,7 +47,6 @@ export interface Manual {
   createdAt: number;
   criadoPor: string; // e-mail do admin que cadastrou
 }
-}
 
 // Perfil de acesso do usuário: controla quem pode usar o sistema.
 // Administradores aprovam ou recusam o acesso de novos usuários.
