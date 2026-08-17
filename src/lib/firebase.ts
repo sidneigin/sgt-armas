@@ -414,3 +414,29 @@ export const saveRegionalToFirestore = async (regional: Regional) => {
 export const deleteRegionalFromFirestore = async (regionalId: string) => {
   await deleteDoc(doc(db, 'regionais', regionalId));
 };
+
+// Regionais padrão que existiam hardcoded antes da feature de cadastro dinâmico.
+// São criadas automaticamente na primeira vez que a coleção ficar vazia.
+const DEFAULT_REGIONAIS = [
+  'Regional Norte do Paraná',
+  'Regional Vale do Ivaí',
+  'Regional Vale do Café',
+  'Regional Maringá',
+  'Regional Londrina',
+];
+
+// Cria as regionais padrão no Firestore se a coleção estiver vazia.
+// Chamada uma vez ao carregar o app — idempotente (não duplica se já existirem).
+export const seedDefaultRegionais = async () => {
+  const snap = await getDocs(query(collection(db, 'regionais'), limit(1)));
+  if (!snap.empty) return; // já existem regionais, não precisa criar
+
+  const now = Date.now();
+  await Promise.all(
+    DEFAULT_REGIONAIS.map((nome, i) => {
+      const id: string = `regional_default_${i}_${now}`;
+      const regional: Regional = { id, nome, createdAt: now, createdBy: 'sistema (migração)' };
+      return setDoc(doc(db, 'regionais', id), regional);
+    })
+  );
+};

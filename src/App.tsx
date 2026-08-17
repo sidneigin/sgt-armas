@@ -46,6 +46,7 @@ import {
   subscribeToRegionais,
   saveRegionalToFirestore,
   deleteRegionalFromFirestore,
+  seedDefaultRegionais,
   subscribeToManuals,
   saveManualToFirestore,
   deleteManualFromFirestore
@@ -141,6 +142,10 @@ export default function App() {
       setRegionais([]);
       return;
     }
+    // Na primeira vez, cria as 5 regionais padrão se a coleção estiver vazia
+    seedDefaultRegionais().catch((err) => {
+      console.error('Erro ao criar regionais padrão:', err);
+    });
     const unsubscribe = subscribeToRegionais(
       (list) => setRegionais(list),
       (error) => {
