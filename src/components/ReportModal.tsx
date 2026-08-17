@@ -73,11 +73,11 @@ export default function ReportModal({
             <div className="px-6 py-6 max-h-[70vh] overflow-y-auto space-y-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
               {/* Event Photo */}
               {report.fotoUrl && (
-                <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700">
+                <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 flex items-center justify-center max-h-[32rem]">
                   <img
                     src={report.fotoUrl}
                     alt={`Foto do evento: ${report.evento}`}
-                    className="w-full max-h-80 object-cover"
+                    className="w-full max-h-[32rem] object-contain"
                   />
                 </div>
               )}
