@@ -142,10 +142,6 @@ export default function App() {
       setRegionais([]);
       return;
     }
-    // Na primeira vez, cria as 5 regionais padrão se a coleção estiver vazia
-    seedDefaultRegionais().catch((err) => {
-      console.error('Erro ao criar regionais padrão:', err);
-    });
     const unsubscribe = subscribeToRegionais(
       (list) => setRegionais(list),
       (error) => {
@@ -154,6 +150,15 @@ export default function App() {
     );
     return () => unsubscribe();
   }, [user]);
+
+  // Seed automático das 5 regionais padrão — só roda uma vez para admins,
+  // quando a coleção estiver vazia (idempotente).
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+    seedDefaultRegionais().catch((err) => {
+      console.error('Erro ao criar regionais padrão:', err);
+    });
+  }, [user, isAdmin]);
 
   // Load reports from Firestore once logado. O app é 100% na nuvem — sem login,
   // nenhum conteúdo é exibido (ver tela de acesso restrito no return abaixo).
