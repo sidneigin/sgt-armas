@@ -50,6 +50,15 @@ service cloud.firestore {
       allow delete: if request.auth != null && isAdminByRole();
     }
 
+    match /regionais/{regionalId} {
+      // Qualquer usuário autenticado pode ler a lista de regionais
+      // (necessário para popular o dropdown no formulário de relatórios).
+      allow read: if request.auth != null;
+
+      // Só administradores podem criar, atualizar ou excluir regionais.
+      allow create, update, delete: if request.auth != null && isAdminByRole();
+    }
+
     function isAdminEmail(email) {
       return email in ['sidneibogas@gmail.com', 'claudiosantinao078@gmail.com', 'imc.sidnei@gmail.com'];
     }

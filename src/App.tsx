@@ -12,9 +12,10 @@ import {
   AlertCircle, 
   LogIn, 
   LogOut, 
-  RefreshCw
+  RefreshCw,
+  MapPin
 } from 'lucide-react';
-import type { EventReport, PhotoChange, UserProfile } from './types';
+import type { EventReport, PhotoChange, UserProfile, Regional } from './types';
 import { validateEventReport } from './utils/validateReport';
 import { translateFirebaseError } from './utils/firebaseErrors';
 import { ThemeProvider } from './context/ThemeContext';
@@ -23,6 +24,7 @@ import ReportForm from './components/ReportForm';
 import ReportList from './components/ReportList';
 import ReportModal from './components/ReportModal';
 import UserManagementPanel from './components/UserManagementPanel';
+import RegionaisPanel from './components/RegionaisPanel';
 import SearchPanel from './components/SearchPanel';
 const StatsPage = lazy(() => import('./components/StatsPage'));
 import { 
@@ -38,7 +40,10 @@ import {
   subscribeToAllUserProfiles,
   setUserApprovalStatus,
   setUserRole,
-  deleteUserProfile
+  deleteUserProfile,
+  subscribeToRegionais,
+  saveRegionalToFirestore,
+  deleteRegionalFromFirestore
 } from './lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
 import logoImg from './assets/images/sgt_armas_logo_ui.jpg';
@@ -51,7 +56,7 @@ export default function App() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeViewReport, setActiveViewReport] = useState<EventReport | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'stats' | 'users'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'stats' | 'users' | 'regionais'>('form');
 
   // Firebase Auth & Sync States
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -64,6 +69,9 @@ export default function App() {
   // Lista de todos os perfis (só carregada para administradores, na tela de Gestão de Usuários)
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
   const isAdmin = userProfile?.role === 'admin';
+
+  // Lista de regionais cadastradas (carregada para todos os usuários logados)
+  const [regionais, setRegionais] = useState<Regional[]>([]);
 
   // Load auth state on mount
   useEffect(() => {
@@ -120,6 +128,21 @@ export default function App() {
     );
     return () => unsubscribe();
   }, [user, isAdmin]);
+
+  // Todos os usuários logados observam as regionais (necessário para o dropdown do formulário)
+  useEffect(() => {
+    if (!user) {
+      setRegionais([]);
+      return;
+    }
+    const unsubscribe = subscribeToRegionais(
+      (list) => setRegionais(list),
+      (error) => {
+        console.error('Erro ao carregar regionais:', error);
+      }
+    );
+    return () => unsubscribe();
+  }, [user]);
 
   // Load reports from Firestore once logado. O app é 100% na nuvem — sem login,
   // nenhum conteúdo é exibido (ver tela de acesso restrito no return abaixo).
@@ -387,6 +410,35 @@ export default function App() {
     }
   };
 
+  // Gestão de Regionais (ações restritas a admins pelas regras do Firestore)
+  const handleSaveRegional = async (nome: string, existingId?: string) => {
+    if (!user?.email) return;
+    try {
+      const id = existingId || `regional_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      const regional: Regional = {
+        id,
+        nome,
+        createdAt: existingId ? (regionais.find((r) => r.id === existingId)?.createdAt || Date.now()) : Date.now(),
+        createdBy: user.email,
+      };
+      await saveRegionalToFirestore(regional);
+      triggerAlert(existingId ? 'Regional atualizada com sucesso!' : 'Regional cadastrada com sucesso!');
+    } catch (error) {
+      console.error(error);
+      triggerAlert('Erro ao salvar regional.', 'error');
+    }
+  };
+
+  const handleDeleteRegional = async (id: string) => {
+    try {
+      await deleteRegionalFromFirestore(id);
+      triggerAlert('Regional excluída com sucesso!');
+    } catch (error) {
+      console.error(error);
+      triggerAlert('Erro ao excluir regional.', 'error');
+    }
+  };
+
   return (
     <ThemeProvider>
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans relative transition-colors">
@@ -628,6 +680,20 @@ export default function App() {
                       )}
                     </button>
                   )}
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => setActiveTab('regionais')}
+                      className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
+                        activeTab === 'regionais'
+                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      <MapPin className="w-4 h-4 shrink-0" />
+                      <span>Gestão de Regionais</span>
+                    </button>
+                  )}
                 </nav>
 
                 {/* User info: name shown below the nav instead of the top bar */}
@@ -669,6 +735,7 @@ export default function App() {
               {activeTab === 'form' ? (
                 <ReportForm
                   editingReport={editingReport}
+                  regionais={regionais}
                   onSave={handleSaveReport}
                   onCancelEdit={handleCancelEdit}
                 />
@@ -700,6 +767,12 @@ export default function App() {
                   onRevoke={handleRevokeUser}
                   onChangeRole={handleChangeUserRole}
                   onDelete={handleDeleteUser}
+                />
+              ) : activeTab === 'regionais' ? (
+                <RegionaisPanel
+                  regionais={regionais}
+                  onSave={handleSaveRegional}
+                  onDelete={handleDeleteRegional}
                 />
               ) : (
                 <ReportList

@@ -26,6 +26,15 @@ export type PhotoChange =
   | { type: 'removed' }
   | { type: 'new'; blob: Blob; previewDataUrl: string };
 
+// Regional: entidade gerenciada por administradores, usada no campo "Regional"
+// dos relatórios. A lista aparece como dropdown no formulário.
+export interface Regional {
+  id: string;           // Document ID no Firestore
+  nome: string;         // Nome da regional (ex: "Regional Norte do Paraná")
+  createdAt: number;    // Timestamp de criação (Date.now())
+  createdBy: string;    // E-mail do admin criador
+}
+
 // Perfil de acesso do usuário: controla quem pode usar o sistema.
 // Administradores aprovam ou recusam o acesso de novos usuários.
 export interface UserProfile {

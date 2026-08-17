@@ -22,7 +22,7 @@ import {
   limit,
   updateDoc
 } from 'firebase/firestore';
-import { EventReport, UserProfile } from '../types';
+import { EventReport, UserProfile, Regional } from '../types';
 import firebaseConfig from '../../firebase-config.json';
 
 // Use environment variables if set (e.g. on Vercel), fallback to local firebase-config.json
@@ -316,4 +316,45 @@ export const setUserRole = async (
 // aprovado automaticamente, se já tiver relatórios) será criado.
 export const deleteUserProfile = async (uid: string) => {
   await deleteDoc(doc(db, 'users', uid));
+};
+
+/**
+ * Gestão de Regionais
+ *
+ * Regionais são entidades gerenciadas por administradores, usadas como
+ * opções do dropdown "Regional" no formulário de relatórios.
+ */
+
+// Observa em tempo real todas as regionais cadastradas
+export const subscribeToRegionais = (
+  onUpdate: (regionais: Regional[]) => void,
+  onError?: (error: any) => void
+) => {
+  const q = query(collection(db, 'regionais'));
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const regionais: Regional[] = [];
+      snapshot.forEach((docSnap) => {
+        regionais.push(docSnap.data() as Regional);
+      });
+      regionais.sort((a, b) => a.nome.localeCompare(b.nome));
+      onUpdate(regionais);
+    },
+    (error) => {
+      console.error('Erro ao carregar regionais:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+// Cria ou atualiza uma regional no Firestore
+export const saveRegionalToFirestore = async (regional: Regional) => {
+  const regionalDocRef = doc(db, 'regionais', regional.id);
+  await setDoc(regionalDocRef, regional, { merge: true });
+};
+
+// Exclui uma regional do Firestore
+export const deleteRegionalFromFirestore = async (regionalId: string) => {
+  await deleteDoc(doc(db, 'regionais', regionalId));
 };

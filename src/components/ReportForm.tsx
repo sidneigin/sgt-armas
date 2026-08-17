@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, User, Users, FileText, CheckCircle, RotateCcw, AlertCircle, Sparkles, Camera, X, Loader2, Hash, Shield } from 'lucide-react';
-import { EventReport, PhotoChange } from '../types';
+import { EventReport, PhotoChange, Regional } from '../types';
 import { compressImageFile } from '../utils/imageCompress';
 import logoImg from '../assets/images/sgt_armas_logo_ui.jpg';
 
 interface ReportFormProps {
   editingReport: EventReport | null;
+  regionais: Regional[];
   onSave: (reportData: Omit<EventReport, 'id' | 'createdAt' | 'fotoUrl'>, photoChange: PhotoChange) => void;
   onCancelEdit: () => void;
 }
 
-export default function ReportForm({ editingReport, onSave, onCancelEdit }: ReportFormProps) {
+export default function ReportForm({ editingReport, regionais, onSave, onCancelEdit }: ReportFormProps) {
   const [numeroRelatorio, setNumeroRelatorio] = useState('');
   const [evento, setEvento] = useState('');
   const [data, setData] = useState('');
@@ -309,17 +310,25 @@ export default function ReportForm({ editingReport, onSave, onCancelEdit }: Repo
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Regional *</label>
             <div className="relative">
-              <input
-                type="text"
+              <select
                 id="input-regional"
                 value={regional}
                 onChange={(e) => setRegional(e.target.value)}
-                placeholder="Ex: 1ª Regional"
-                className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border ${
+                className={`w-full pl-9 pr-3 py-2 text-sm rounded-xl border appearance-none ${
                   errors.regional ? 'border-rose-400 bg-rose-50/10 dark:bg-rose-900/30 focus:ring-rose-200 dark:focus:ring-rose-700' : 'border-slate-200 dark:border-slate-600 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-800 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100'
                 } outline-none focus:ring-3 transition-all`}
-              />
-              <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3" />
+              >
+                <option value="" disabled>Selecione a regional</option>
+                {regionais.map((r) => (
+                  <option key={r.id} value={r.nome}>{r.nome}</option>
+                ))}
+              </select>
+              <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3 pointer-events-none" />
+              <div className="absolute right-3 top-3 pointer-events-none">
+                <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
             {errors.regional && (
               <p className="text-[10px] text-rose-500 font-medium flex items-center gap-1">
