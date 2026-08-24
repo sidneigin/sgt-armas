@@ -343,7 +343,7 @@ export async function buildSingleReportPDF(report: EventReport) {
     doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184);
-    doc.text('Gerado via Sistema de Relatórios de Eventos', margin, pageHeight - 10);
+    doc.text('Gerado via imc.sidnei@gmail.com', margin, pageHeight - 10);
     doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 20, pageHeight - 10);
   }
 
