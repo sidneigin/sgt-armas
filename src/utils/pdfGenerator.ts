@@ -180,22 +180,20 @@ export async function buildSingleReportPDF(report: EventReport) {
   let photoBlockHeight = 0;
   let photoImgWidthMM = 0;
   let photoImgHeightMM = 0;
-  if (photoResult) {
-    if (photoResult.ok) {
-      const maxImgWidthMM = contentWidth;
-      photoImgWidthMM = maxImgWidthMM;
-      photoImgHeightMM = (photoResult.img.height / photoResult.img.width) * photoImgWidthMM;
-      if (photoImgHeightMM > photoMaxHeightMM) {
-        photoImgHeightMM = photoMaxHeightMM;
-        photoImgWidthMM = (photoResult.img.width / photoResult.img.height) * photoImgHeightMM;
-      }
-      photoBlockHeight = 4.5 + photoImgHeightMM + 8; // label + imagem + espaço depois
-    } else {
-      doc.setFontSize(8.5);
-      const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photoResult.error}`, contentWidth - 8);
-      const warningHeight = (warningLines.length * 4.5) + 5;
-      photoBlockHeight = 4.5 + warningHeight + 8;
+  if (photoResult && photoResult.ok) {
+    const maxImgWidthMM = contentWidth;
+    photoImgWidthMM = maxImgWidthMM;
+    photoImgHeightMM = (photoResult.img.height / photoResult.img.width) * photoImgWidthMM;
+    if (photoImgHeightMM > photoMaxHeightMM) {
+      photoImgHeightMM = photoMaxHeightMM;
+      photoImgWidthMM = (photoResult.img.width / photoResult.img.height) * photoImgHeightMM;
     }
+    photoBlockHeight = 4.5 + photoImgHeightMM + 8; // label + imagem + espaço depois
+  } else if (photoResult && 'error' in photoResult) {
+    doc.setFontSize(8.5);
+    const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photoResult.error}`, contentWidth - 8);
+    const warningHeight = (warningLines.length * 4.5) + 5;
+    photoBlockHeight = 4.5 + warningHeight + 8;
   }
 
   // 4. Participants Section
@@ -317,7 +315,7 @@ export async function buildSingleReportPDF(report: EventReport) {
       doc.roundedRect(imgX - 1, currentY - 1, photoImgWidthMM + 2, photoImgHeightMM + 2, 1.5, 1.5, 'S');
       doc.addImage(photoResult.dataUrl, 'JPEG', imgX, currentY, photoImgWidthMM, photoImgHeightMM);
       currentY += photoImgHeightMM + 8;
-    } else {
+    } else if ('error' in photoResult) {
       // A foto existe (fotoUrl preenchido) mas não pôde ser carregada.
       doc.setFontSize(8.5);
       const warningLines = doc.splitTextToSize(`⚠ Não foi possível carregar a foto: ${photoResult.error}`, contentWidth - 8);

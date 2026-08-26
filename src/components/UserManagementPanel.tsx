@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode, type Key } from 'react';
 import { UserCheck, UserX, ShieldCheck, Clock, RotateCcw, UserCog, Trash2, Users as UsersIcon } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -30,15 +30,14 @@ function formatDate(iso?: string) {
   }
 }
 
-function UserRow({
-  profile,
-  meta,
-  children,
-}: {
+interface UserRowProps {
   profile: UserProfile;
   meta?: ReactNode;
   children: ReactNode;
-}) {
+  key?: Key;
+}
+
+function UserRow({ profile, meta, children }: UserRowProps) {
   const isAdminRole = profile.role === 'admin';
   return (
     <div className="flex items-center flex-wrap sm:flex-nowrap gap-3 py-3 px-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { MapPin, Plus, Pencil, Trash2, CheckCircle, X, AlertCircle, Map } from 'lucide-react';
 import { Regional } from '../types';
 
@@ -26,7 +26,7 @@ export default function RegionaisPanel({ regionais, onSave, onDelete }: Regionai
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
