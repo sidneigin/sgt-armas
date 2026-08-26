@@ -206,15 +206,17 @@ export default function NotesPanel({ notes, onSave, onDelete }: NotesPanelProps)
                     className={`relative aspect-square flex items-center justify-center rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
                       selecionado
                         ? 'bg-amber-600 text-white'
-                        : ehHoje
-                          ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300'
-                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : tem
+                          ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 ring-1 ring-amber-300 dark:ring-amber-700'
+                          : ehHoje
+                            ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                     title={tem ? `Agenda em ${formatarDataBR(iso)}` : formatarDataBR(iso)}
                   >
                     {d}
                     {tem && !selecionado && (
-                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-500" />
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber-500" />
                     )}
                   </button>
                 );
