@@ -22,7 +22,7 @@ import {
   limit,
   updateDoc
 } from 'firebase/firestore';
-import { EventReport, UserProfile, Regional, Manual } from '../types';
+import { EventReport, UserProfile, Regional, Manual, Note } from '../types';
 import firebaseConfig from '../../firebase-config.json';
 
 // Use environment variables if set (e.g. on Vercel), fallback to local firebase-config.json
@@ -413,6 +413,49 @@ export const saveRegionalToFirestore = async (regional: Regional) => {
 // Exclui uma regional do Firestore
 export const deleteRegionalFromFirestore = async (regionalId: string) => {
   await deleteDoc(doc(db, 'regionais', regionalId));
+};
+
+/**
+ * Gestão de Anotações
+ *
+ * Anotações são notas livres (título + texto) compartilhadas entre todos os
+ * usuários logados. Qualquer usuário autenticado pode criar, editar e excluir
+ * (modelo compartilhado, igual aos relatórios — ver firestore.rules).
+ */
+
+// Observa em tempo real todas as anotações cadastradas
+export const subscribeToNotes = (
+  onUpdate: (notes: Note[]) => void,
+  onError?: (error: any) => void
+) => {
+  const q = query(collection(db, 'notes'));
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const notes: Note[] = [];
+      snapshot.forEach((docSnap) => {
+        notes.push(docSnap.data() as Note);
+      });
+      // Mais recentes (por atualização) primeiro
+      notes.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+      onUpdate(notes);
+    },
+    (error) => {
+      console.error('Erro ao carregar anotações:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+// Cria ou atualiza uma anotação no Firestore
+export const saveNoteToFirestore = async (note: Note) => {
+  const noteDocRef = doc(db, 'notes', note.id);
+  await setDoc(noteDocRef, note, { merge: true });
+};
+
+// Exclui uma anotação do Firestore
+export const deleteNoteFromFirestore = async (noteId: string) => {
+  await deleteDoc(doc(db, 'notes', noteId));
 };
 
 // Regionais padrão que existiam hardcoded antes da feature de cadastro dinâmico.

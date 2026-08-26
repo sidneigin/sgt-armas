@@ -48,6 +48,18 @@ export interface Manual {
   criadoPor: string; // e-mail do admin que cadastrou
 }
 
+// Anotações: notas livres (título + texto) compartilhadas entre todos os
+// usuários logados. Qualquer usuário autenticado pode criar, editar e excluir
+// (modelo compartilhado, igual aos relatórios — ver firestore.rules).
+export interface Note {
+  id: string;            // Document ID no Firestore
+  titulo: string;        // Título da anotação
+  conteudo: string;      // Texto livre da anotação
+  createdAt: number;     // Timestamp de criação (Date.now())
+  updatedAt: number;     // Timestamp da última edição (Date.now())
+  criadoPor: string;     // E-mail do autor
+}
+
 // Perfil de acesso do usuário: controla quem pode usar o sistema.
 // Administradores aprovam ou recusam o acesso de novos usuários.
 export interface UserProfile {

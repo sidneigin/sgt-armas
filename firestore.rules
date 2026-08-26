@@ -67,6 +67,12 @@ service cloud.firestore {
       allow create, update, delete: if request.auth != null && isAdminByRole();
     }
 
+    match /notes/{noteId} {
+      // Qualquer usuário autenticado (com login Google) tem acesso total:
+      // todos veem, criam, editam e excluem todas as anotações (compartilhadas).
+      allow read, create, update, delete: if request.auth != null;
+    }
+
     function isAdminEmail(email) {
       return email in ['sidneibogas@gmail.com', 'claudiosantinao078@gmail.com', 'imc.sidnei@gmail.com'];
     }

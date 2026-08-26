@@ -7,6 +7,7 @@ import {
   BarChart3,
   Users,
   BookOpen,
+  StickyNote,
   Clock,
   ShieldAlert,
   CheckCircle, 
@@ -16,7 +17,7 @@ import {
   RefreshCw,
   MapPin
 } from 'lucide-react';
-import type { EventReport, PhotoChange, UserProfile, Regional, Manual } from './types';
+import type { EventReport, PhotoChange, UserProfile, Regional, Manual, Note } from './types';
 import { validateEventReport } from './utils/validateReport';
 import { translateFirebaseError } from './utils/firebaseErrors';
 import { ThemeProvider } from './context/ThemeContext';
@@ -27,6 +28,7 @@ import ReportModal from './components/ReportModal';
 import UserManagementPanel from './components/UserManagementPanel';
 import RegionaisPanel from './components/RegionaisPanel';
 import ManualsPanel from './components/ManualsPanel';
+import NotesPanel from './components/NotesPanel';
 import SearchPanel from './components/SearchPanel';
 const StatsPage = lazy(() => import('./components/StatsPage'));
 import { 
@@ -49,7 +51,10 @@ import {
   seedDefaultRegionais,
   subscribeToManuals,
   saveManualToFirestore,
-  deleteManualFromFirestore
+  deleteManualFromFirestore,
+  subscribeToNotes,
+  saveNoteToFirestore,
+  deleteNoteFromFirestore
 } from './lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
 import logoImg from './assets/images/sgt_armas_logo_ui.jpg';
@@ -62,8 +67,9 @@ export default function App() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeViewReport, setActiveViewReport] = useState<EventReport | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'stats' | 'users' | 'regionais' | 'manuals'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'search' | 'reports' | 'stats' | 'users' | 'regionais' | 'manuals' | 'anotacoes'>('form');
   const [manuals, setManuals] = useState<Manual[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
 
   // Firebase Auth & Sync States
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -240,6 +246,25 @@ export default function App() {
     return () => unsubscribeManuals();
   }, [user, authChecked]);
 
+  // Carrega as anotações em tempo real. Qualquer usuário logado pode ler e
+  // gerenciar (criar/editar/excluir), modelo compartilhado — ver firestore.rules.
+  useEffect(() => {
+    if (!authChecked || !user) {
+      setNotes([]);
+      return;
+    }
+
+    const unsubscribeNotes = subscribeToNotes(
+      (firestoreNotes) => setNotes(firestoreNotes),
+      (error) => {
+        console.error('Erro ao carregar anotações:', error);
+        triggerAlert(`Erro ao carregar anotações: ${translateFirebaseError(error)}`, 'error');
+      }
+    );
+
+    return () => unsubscribeNotes();
+  }, [user, authChecked]);
+
   // Save/trigger alert messages
   const triggerAlert = (message: string, type: 'success' | 'error' = 'success') => {
     setAlertInfo({ message, type });
@@ -395,6 +420,37 @@ export default function App() {
     } catch (error: any) {
       console.error(error);
       triggerAlert(`Erro ao excluir o manual: ${translateFirebaseError(error)}`, 'error');
+    }
+  };
+
+  // Gestão de Anotações (qualquer usuário logado pode criar/editar/excluir)
+  const handleSaveNote = async (titulo: string, conteudo: string, existingId?: string) => {
+    if (!user?.email) return;
+    try {
+      const now = Date.now();
+      const note: Note = {
+        id: existingId || `note_${now}_${Math.random().toString(36).substring(2, 7)}`,
+        titulo,
+        conteudo,
+        createdAt: existingId ? (notes.find((n) => n.id === existingId)?.createdAt || now) : now,
+        updatedAt: now,
+        criadoPor: user.email,
+      };
+      await saveNoteToFirestore(note);
+      triggerAlert(existingId ? 'Anotação atualizada com sucesso!' : 'Anotação criada com sucesso!');
+    } catch (error: any) {
+      console.error(error);
+      triggerAlert(`Erro ao salvar a anotação: ${translateFirebaseError(error)}`, 'error');
+    }
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    try {
+      await deleteNoteFromFirestore(id);
+      triggerAlert('Anotação excluída com sucesso!');
+    } catch (error: any) {
+      console.error(error);
+      triggerAlert(`Erro ao excluir a anotação: ${translateFirebaseError(error)}`, 'error');
     }
   };
 
@@ -749,6 +805,18 @@ export default function App() {
                     <span>Manuais Insanos</span>
                   </button>
 
+                  <button
+                    onClick={() => setActiveTab('anotacoes')}
+                    className={`flex items-center gap-1.5 md:gap-2.5 flex-1 md:flex-none justify-center md:justify-start px-2 md:px-3 py-2 md:py-3 rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all cursor-pointer text-center md:text-left ${
+                      activeTab === 'anotacoes'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/10'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <StickyNote className="w-4 h-4 shrink-0" />
+                    <span>Anotações</span>
+                  </button>
+
                   {isAdmin && (
                     <button
                       onClick={() => setActiveTab('users')}
@@ -871,6 +939,12 @@ export default function App() {
                   isAdmin={isAdmin}
                   onSave={handleSaveManual}
                   onDelete={handleDeleteManual}
+                />
+              ) : activeTab === 'anotacoes' ? (
+                <NotesPanel
+                  notes={notes}
+                  onSave={handleSaveNote}
+                  onDelete={handleDeleteNote}
                 />
               ) : (
                 <ReportList
