@@ -55,6 +55,7 @@ export interface Note {
   id: string;            // Document ID no Firestore
   titulo: string;        // Título da anotação
   conteudo: string;      // Texto livre da anotação
+  data?: string;         // Data opcional (YYYY-MM-DD) para a agenda
   createdAt: number;     // Timestamp de criação (Date.now())
   updatedAt: number;     // Timestamp da última edição (Date.now())
   criadoPor: string;     // E-mail do autor

@@ -450,7 +450,12 @@ export const subscribeToNotes = (
 // Cria ou atualiza uma anotação no Firestore
 export const saveNoteToFirestore = async (note: Note) => {
   const noteDocRef = doc(db, 'notes', note.id);
-  await setDoc(noteDocRef, note, { merge: true });
+  await setDoc(noteDocRef, {
+    ...note,
+    // merge:true não apaga um campo omitido; deleteField() garante que, ao
+    // salvar uma anotação sem data, o campo anterior seja removido.
+    data: note.data ?? deleteField(),
+  }, { merge: true });
 };
 
 // Exclui uma anotação do Firestore

@@ -424,7 +424,7 @@ export default function App() {
   };
 
   // Gestão de Anotações (qualquer usuário logado pode criar/editar/excluir)
-  const handleSaveNote = async (titulo: string, conteudo: string, existingId?: string) => {
+  const handleSaveNote = async (titulo: string, conteudo: string, data?: string, existingId?: string) => {
     if (!user?.email) return;
     try {
       const now = Date.now();
@@ -432,6 +432,7 @@ export default function App() {
         id: existingId || `note_${now}_${Math.random().toString(36).substring(2, 7)}`,
         titulo,
         conteudo,
+        data,
         createdAt: existingId ? (notes.find((n) => n.id === existingId)?.createdAt || now) : now,
         updatedAt: now,
         criadoPor: user.email,
