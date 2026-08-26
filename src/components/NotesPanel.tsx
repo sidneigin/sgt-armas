@@ -155,7 +155,7 @@ export default function NotesPanel({ notes, onSave, onDelete }: NotesPanelProps)
           <StickyNote className="w-4.5 h-4.5 text-amber-600" />
         </div>
         <div>
-          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Anotações</h2>
+          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Agenda</h2>
           <p className="text-xs text-slate-400 dark:text-slate-500">Crie, agende e gerencie anotações compartilhadas</p>
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function NotesPanel({ notes, onSave, onDelete }: NotesPanelProps)
                           ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300'
                           : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
-                    title={tem ? `Anotações em ${formatarDataBR(iso)}` : formatarDataBR(iso)}
+                    title={tem ? `Agenda em ${formatarDataBR(iso)}` : formatarDataBR(iso)}
                   >
                     {d}
                     {tem && !selecionado && (
@@ -320,7 +320,7 @@ export default function NotesPanel({ notes, onSave, onDelete }: NotesPanelProps)
           <div className="flex items-center justify-between mb-2">
             <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               <StickyNote className="w-3.5 h-3.5" />
-              {dataSelecionada ? `Anotações de ${formatarDataBR(dataSelecionada)}` : `Anotações (${listaExibida.length})`}
+              {dataSelecionada ? `Agenda de ${formatarDataBR(dataSelecionada)}` : `Agenda (${listaExibida.length})`}
             </h3>
             {dataSelecionada && (
               <button

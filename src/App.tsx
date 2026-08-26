@@ -423,7 +423,7 @@ export default function App() {
     }
   };
 
-  // Gestão de Anotações (qualquer usuário logado pode criar/editar/excluir)
+  // Gestão de Agenda (qualquer usuário logado pode criar/editar/excluir)
   const handleSaveNote = async (titulo: string, conteudo: string, data?: string, existingId?: string) => {
     if (!user?.email) return;
     try {
@@ -815,7 +815,7 @@ export default function App() {
                     }`}
                   >
                     <StickyNote className="w-4 h-4 shrink-0" />
-                    <span>Anotações</span>
+                    <span>Agenda</span>
                   </button>
 
                   {isAdmin && (
